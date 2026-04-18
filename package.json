@@ -1,0 +1,19 @@
+{
+  "name": "magento2-colissimo-hyva-checkout",
+  "version": "1.0.0",
+  "description": "End-to-end tests for the Colissimo Relay Point Picker for Hyvä Checkout Magento 2 module.",
+  "private": true,
+  "author": "Control Alt Delete BV",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/controlaltdelete-nl/magento2-colissimo-hyva-checkout.git"
+  },
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0"
+  }
+}

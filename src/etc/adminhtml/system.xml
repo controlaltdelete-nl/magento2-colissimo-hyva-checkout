@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="carriers">
+            <group id="lpc_group">
+                <group id="google_maps" translate="label" type="text" sortOrder="1000" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Hyvä Checkout integration</label>
+                    <field id="api_key" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Api key</label>
+                        <config_path>controlaltdelete_colissimo_hyva/google_maps/api_key</config_path>
+                    </field>
+                    <field id="region" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Region</label>
+                        <config_path>controlaltdelete_colissimo_hyva/google_maps/region</config_path>
+                    </field>
+                    <field id="starting_latitude" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Starting latitude</label>
+                        <config_path>controlaltdelete_colissimo_hyva/google_maps/starting_latitude</config_path>
+                    </field>
+                    <field id="starting_longitude" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                        <label>Starting longitude</label>
+                        <config_path>controlaltdelete_colissimo_hyva/google_maps/starting_longitude</config_path>
+                    </field>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,154 @@
+name: End-2-End Testing
+on:
+  push:
+  pull_request:
+    types:
+      - opened
+      - labeled
+
+jobs:
+  secrets-gate:
+    if: ${{ github.event.label.name == 'Run E2E tests' || github.event.action != 'labeled' }}
+    runs-on: ubuntu-latest
+    outputs:
+      is-secret-set: ${{ steps.is-secret-set.outputs.has_COLISSIMO_credentials }}
+    steps:
+      - id: is-secret-set
+        env:
+          COLISSIMO_ACCOUNT_ID: ${{ secrets.COLISSIMO_ACCOUNT_ID }}
+          COLISSIMO_ACCOUNT_PASSWORD: ${{ secrets.COLISSIMO_ACCOUNT_PASSWORD }}
+        if: "${{ env.COLISSIMO_ACCOUNT_ID != '' && env.COLISSIMO_ACCOUNT_PASSWORD != '' }}"
+        run: echo "has_COLISSIMO_credentials=true" >> $GITHUB_OUTPUT
+
+  # Remove flag used to trigger the e2e tests
+  remove_flag:
+    if: ${{ contains(github.event.*.labels.*.name, 'Run E2E tests') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove "Run E2E tests" label
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: ${{ github.event.issue.number || github.event.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: "Run E2E tests"
+            })
+
+  e2e-tests:
+    needs:
+      - secrets-gate
+    if: needs.secrets-gate.outputs.is-secret-set == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - PHP_VERSION: php83-fpm
+            MAGENTO_VERSION: 2.4.8-p3
+          - PHP_VERSION: php84-fpm
+            MAGENTO_VERSION: 2.4.8-p3
+
+    runs-on: ubuntu-latest
+    env:
+      PHP_VERSION: ${{ matrix.PHP_VERSION }}
+      MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
+      COLISSIMO_ACCOUNT_ID: ${{ secrets.COLISSIMO_ACCOUNT_ID }}
+      COLISSIMO_ACCOUNT_PASSWORD: ${{ secrets.COLISSIMO_ACCOUNT_PASSWORD }}
+      HYVA_SSH_PRIVATE_KEY: ${{ secrets.HYVA_SSH_PRIVATE_KEY }}
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+      MAGENTO_COMPOSER_USERNAME: ${{ secrets.MAGENTO_COMPOSER_USERNAME }}
+      MAGENTO_COMPOSER_PASSWORD: ${{ secrets.MAGENTO_COMPOSER_PASSWORD }}
+      MAGENTO_URL: http://magento.test
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Start Docker containers
+        run: |
+          docker compose -f .github/workflows/templates/docker-compose.yaml pull --quiet
+          docker compose -f .github/workflows/templates/docker-compose.yaml up -d --no-build
+          until docker exec magento-project-community-edition php bin/magento --version > /dev/null 2>&1; do
+            echo "Waiting for Magento to be ready..."; sleep 10;
+          done
+
+      - name: Install Hyvä theme and Hyvä Checkout
+        run: |
+          docker exec magento-project-community-edition /bin/bash /data/install-hyva.sh
+
+      - name: Configure Magento composer credentials and repositories
+        run: |
+          docker exec magento-project-community-edition composer config repositories.magento composer https://repo.magento.com
+          docker exec magento-project-community-edition composer config http-basic.repo.magento.com ${{ env.MAGENTO_COMPOSER_USERNAME }} ${{ env.MAGENTO_COMPOSER_PASSWORD }}
+
+      - name: Upload the code into the docker container
+        run: |
+          sed -i '/version/d' ./composer.json && \
+          docker cp $(pwd) magento-project-community-edition:/data/extensions/ && \
+          docker exec magento-project-community-edition ./install-composer-package -W controlaltdelete/magento2-colissimo-hyva-checkout:@dev
+          docker exec magento-project-community-edition ./install-composer-package imaginaerum/magento2-language-fr-fr
+
+      - name: Activate the extension
+        run: |
+          docker exec magento-project-community-edition php /data/merge-config.php
+          docker exec magento-project-community-edition ./retry "php bin/magento module:enable LaPoste_Colissimo ControlAltDelete_ColissimoHyva"
+          docker exec magento-project-community-edition ./retry "php bin/magento setup:upgrade --no-interaction --keep-generated"
+          docker exec magento-project-community-edition ./retry "php bin/magento cache:flush"
+
+      - name: Configure Colissimo
+        run: |
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env lpc_advanced/lpc_general/id_webservices ${{ env.COLISSIMO_ACCOUNT_ID }}"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env lpc_advanced/lpc_general/connectionMode login"
+          docker exec magento-project-community-edition magerun2 config:store:set carriers/colissimo/active 1
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env carriers/lpc_group/pr_enable 1"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env carriers/lpc_group/pr_free 1"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env carriers/lpc_group/pr_label 'Colissimo Pickup Retrait'"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env controlaltdelete_colissimo_hyva/google_maps/api_key ${{ env.GOOGLE_MAPS_API_KEY }}"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env shipping/origin/country_id FR"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env general/country/default FR"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set --lock-env general/locale/code fr_FR"
+          ENCODED_PASSWORD=$(echo -n "${{ env.COLISSIMO_ACCOUNT_PASSWORD }}" | base64)
+          docker exec magento-project-community-edition magerun2 config:store:set lpc_advanced/lpc_general/pwd_webservices "$ENCODED_PASSWORD"
+
+      - name: Prepare Magento
+        run: |
+          sudo echo "127.0.0.1 magento.test" | sudo tee -a /etc/hosts
+          docker exec magento-project-community-edition /bin/bash ./change-base-url $MAGENTO_URL/
+          docker exec magento-project-community-edition ./retry "bin/magento config:set admin/security/session_lifetime 1440"
+          docker exec magento-project-community-edition ./retry "bin/magento config:set web/cookie/cookie_lifetime 86400"
+          docker exec magento-project-community-edition ./retry "php bin/magento setup:di:compile"
+          docker exec magento-project-community-edition ./retry "php bin/magento setup:static-content:deploy -f"
+          docker exec magento-project-community-edition ./retry "php bin/magento indexer:reindex"
+
+      - name: Check if we can reach the Magento frontend
+        run: |
+          curl --fail-with-body -k -v -w "%{http_code}" $MAGENTO_URL/
+
+      - name: Check if we can reach the Magento backend
+        run: |
+          curl --fail-with-body -k -v -w "%{http_code}" $MAGENTO_URL/admin/
+
+      - name: Install Playwright dependencies
+        run: |
+          npm install
+          npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        id: run_tests
+        run: |
+          BASE_URL="$MAGENTO_URL/" npx playwright test
+
+      - name: Dump docker-compose logs
+        if: failure()
+        run: |
+          docker compose -f .github/workflows/templates/docker-compose.yaml logs magento > magento.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: E2E logs - ${{ matrix.PHP_VERSION }} - ${{ matrix.MAGENTO_VERSION }}
+          path: |
+            test-results
+            playwright-report
+            magento-logs
+            magento.log

@@ -1,0 +1,29 @@
+<?php
+/** @var Escaper $escaper */
+/** @var ColissimoPr $magewire */
+
+use ControlAltDelete\ColissimoHyva\Magewire\Checkout\Shipping\Method\ColissimoPr;
+use Magento\Framework\Escaper;
+
+$selectedPickupPoint = $magewire->getSelectedPickupPoint();
+?>
+
+<div x-data="colissimoRelayFinderLink" class="mt-2">
+    <span @click="openLink" class="controlaltdelete-select-pickup-point underline cursor-pointer">
+        <?= __('Choose pickup point') ?>
+    </span>
+
+    <?php if ($selectedPickupPoint): ?>
+        <div class="mt-3 text-sm text-gray-700">
+            <div class="controlaltdelete-selected-pickup-point font-medium"><?= __('Selected pickup point') ?></div>
+            <div class="controlaltdelete-pickup-point-name"><?= $escaper->escapeHtml($selectedPickupPoint->getName()) ?></div>
+            <div class="controlaltdelete-pickup-point-address">
+                <?php foreach ($selectedPickupPoint->getAddressLines() as $addressLine): ?>
+                    <div class="controlaltdelete-pickup-point-address-line">
+                        <?= $escaper->escapeHtml($addressLine) ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>

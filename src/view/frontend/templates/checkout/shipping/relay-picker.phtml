@@ -1,0 +1,501 @@
+<?php
+declare(strict_types=1);
+
+use ControlAltDelete\ColissimoHyva\Magewire\Checkout\Shipping\RelayPicker;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as PriceFormatter;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\LucideIcons;
+use Hyva\Theme\ViewModel\SvgIcons;
+use LaPoste\Colissimo\Block\Selector;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Selector $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var SvgIcons $icons */
+/** @var Template $block */
+/** @var RelayPicker $magewire */
+
+$icons = $viewModels->require(LucideIcons::class);
+$priceFormatter = $viewModels->require(PriceFormatter::class);
+?>
+<div>
+    <section
+        id="relay-finder-popup"
+        x-data="initRelayFinder"
+        @close-relay-finder-popup.window="closeRelayFinderPopup"
+        @open-relay-finder-popup.window="openRelayFinderPopup"
+        @keydown.window.escape="closeRelayFinderPopup"
+    >
+        <div x-show="isLoading" class="flex items-center justify-center p-6">
+            <div class="loader"></div>
+
+            <?= $block->getChildHtml('loading-relay') ?>
+        </div>
+
+        <div
+            class="backdrop"
+            aria-hidden="true"
+            x-cloak
+            x-show="isOpen"
+            @click="closeRelayFinderPopup"
+            role="button"
+        ></div>
+
+        <div
+            role="dialog"
+            aria-modal="true"
+            class="inset-y-0 right-0 z-30 flex max-w-full fixed"
+            x-cloak
+            x-show="isOpen"
+            :aria-hidden="isHidden"
+            :tabindex="getTabIndex"
+            aria-labelledby="relay-finder-popup-title"
+            x-ref="relayFinderPopupDialog"
+        >
+            <div class="flex flex-col relative w-[480px] md:w-[640px] bg-white overflow-y-auto p-4">
+                <div class="shrink-0">
+                    <div class="p-5 lg:px-8.5 lg:py-6 border-b border-theme-gray-100 flex justify-between items-center">
+                        <span id="relay-finder-popup-title" class="font-semibold lg:text-lg uppercase">
+                            <?= __('Relay point') ?>
+                        </span>
+                        <button
+                            type="button"
+                            @click="closeRelayFinderPopup"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Close panel')) ?>"
+                            class="btn btn-icon btn-gray mb-2"
+                        >
+                            <?= $icons->renderHtml('x', 'stroke-current', 24, 24, ['aria-hidden' => true]); ?>
+                        </button>
+                    </div>
+                    <div class="p-5 lg:px-8.5 lg:py-6 mt-4">
+                        <div class="flex flex-col h-auto py-6" x-show="hasErrors" x-cloak>
+                            <div class="message error mb-6 px-4 py-2 text-xs">
+                                <template x-for="(message, index) in errorMessages" :key="index">
+                                    <div>
+                                        <template x-if="message">
+                                            <span x-html="message"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <div class="flex gap-4 items-center">
+                                <div class="flex grow">
+                                    <div class="group flex grow relative">
+                                        <gmp-place-autocomplete
+                                            type="address"
+                                            placeholder=" "
+                                            class="form-input w-full grow text postcode address-attribute"
+                                            x-ref="relayFinderPopupDialogSearch"
+                                            included-region-codes="<?= $escaper->escapeHtml($magewire->getDefaultCountry()); ?>"
+                                        >
+                                        </gmp-place-autocomplete>
+                                    </div>
+                                </div>
+                                <span><?= __('or') ?></span>
+                                <div>
+                                    <button
+                                        class="border rounded-full flex justify-center items-center w-15 h-15"
+                                        @click="getGeolocation"
+                                    >
+                                        <?= $icons->renderHtml('map-pin-check', 'stroke-current', 24, 24, ['aria-hidden' => 'true']); ?>
+                                    </button>
+                                </div>
+                            </div>
+                            <div x-show="validationError" x-cloak class="mb-4">
+                                <div class="text-red-500 text-sm" x-text="validationError"></div>
+                            </div>
+                        </div>
+                        <div class="text-sm font-semibold flex mb-6">
+                            <button
+                                type="button"
+                                @click="renderAsList"
+                                class="w-1/2 py-3.5 lg:py-6 text-center border-b border-theme-gray-200 text-theme-gray-400"
+                                :class="renderAsListButtonClass"
+                            >
+                                <?= __('List') ?>
+                            </button>
+
+                            <button
+                                type="button"
+                                @click="renderAsMap"
+                                class="w-1/2 py-3.5 lg:py-6 text-center border-b border-theme-gray-200 text-theme-gray-400"
+                                :class="renderAsMapButtonClass"
+                            >
+                                <?= __('Map') ?>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1  px-5 lg:px-8.5">
+                    <div x-show="shouldRenderAsList">
+                        <?php foreach ($magewire->renderedPickupPoints as $pickupPoint): ?>
+                            <?= /* @noEscape */
+                            $pickupPoint['html']; ?>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div x-show="shouldRenderAsMap" class="h-full" wire:ignore>
+                        <div class="relative h-full">
+                            <div id="google-maps-relay" x-ref="google-maps-relay" class="w-full h-full"></div>
+
+                            <div class="absolute bottom-0 w-full" x-show="isMapLocationShown">
+                                <div class="mx-4 bg-white relative">
+                                    <span @click="closeMapLocation" class="cursor-pointer absolute right-0 top-0 p-2">
+                                        <?= $icons->renderHtml('x', 'stroke-current', 24, 24, ['aria-hidden' => true]); ?>
+                                    </span>
+
+                                    <span x-html="currentLocationHtml"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function initRelayFinder() {
+            return {
+                open: false,
+                errors: 0,
+                errorMessages: [],
+                loading: false,
+                listType: 'list', // list or map
+                showMapLocation: false,
+                currentLocation: null,
+                debounceTimeout: null,
+                validationError: null,
+
+                init() {
+                    this.loadGoogleMapsApi(() => {
+                        this.$refs.relayFinderPopupDialogSearch.addEventListener('gmp-select', async ({placePrediction}) => {
+                            const place = placePrediction.toPlace();
+                            await place.fetchFields({fields: ['location', 'addressComponents']});
+
+                            this.updatePickupPointsListByLatLng(place.location.lat(), place.location.lng(), place.addressComponents);
+                        });
+                    })
+                },
+
+                isOpen() {
+                    return this.open;
+                },
+                isHidden() {
+                    return !this.open;
+                },
+                isLoading() {
+                    return this.loading;
+                },
+                getTabIndex() {
+                    return this.open ? 0 : -1;
+                },
+                hasErrors() {
+                    return this.errors > 0;
+                },
+                chevronClass() {
+                    return {
+                        'rotate-180': this.open,
+                    }
+                },
+                renderAsList() {
+                    this.listType = 'list';
+                },
+                shouldRenderAsList() {
+                    return this.listType === 'list';
+                },
+                renderAsListButtonClass() {
+                    return this.listType === 'list'
+                        ? 'text-black bg-gray-100 border-b-2 border-black'
+                        : '';
+                },
+
+                renderAsMap() {
+                    this.loadGoogleMapsApi(() => this.renderMap());
+
+                    this.listType = 'map';
+                },
+                shouldRenderAsMap() {
+                    return this.listType === 'map';
+                },
+                renderAsMapButtonClass() {
+                    return this.listType === 'map'
+                        ? 'text-black bg-gray-100 border-b-2 border-black'
+                        : '';
+                },
+
+                // Map location
+                openMapLocation(point) {
+                    this.showMapLocation = true;
+                    this.currentLocation = point;
+                },
+                closeMapLocation() {
+                    this.showMapLocation = false;
+                    this.currentLocation = null;
+                },
+                isMapLocationShown() {
+                    return this.showMapLocation;
+                },
+                selectPickupPoint() {
+                    this.isLoading();
+                    this.$wire.selectPickupPoint(this.currentLocation.identifiant).then(() => {
+                        this.closeRelayFinderPopup();
+                    });
+                },
+                currentLocationHtml() {
+                    return this.currentLocation ? this.currentLocation.html : '';
+                },
+
+                setErrorMessages: function setErrorMessages(messages) {
+                    this.errorMessages = messages;
+                },
+                scrollLock(use = true) {
+                    document.body.style.overflow = use ? "hidden" : "";
+                },
+                loadGoogleMapsApi(callback) {
+                    if (document.getElementById('google-maps-script')) {
+                        callback();
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.id = 'google-maps-script';
+                    script.src = 'https://maps.googleapis.com/maps/api/js?libraries=places,marker&key=<?= $escaper->escapeJs($magewire->getGoogleMapsApiKey()) ?>&loading=async&callback=initGoogleMapsLibrary';
+
+                    window.initGoogleMapsLibrary = () => callback();
+                    document.head.appendChild(script);
+                },
+                async renderMap(centerPin) {
+                    const {Map} = await google.maps.importLibrary("maps");
+
+                    let map = new Map(this.$refs['google-maps-relay'], {
+                        zoom: 12,
+                        center: {
+                            lat: <?= $escaper->escapeJs($magewire->getStartingLatitude()); ?>,
+                            lng: <?= $escaper->escapeJs($magewire->getStartingLongitude()); ?>
+                        },
+                        styles: [
+                            {
+                                featureType: 'water',
+                                elementType: 'geometry',
+                                stylers: [{color: '#e9e9e9'}, {lightness: 17}]
+                            },
+                            {
+                                featureType: 'landscape',
+                                elementType: 'geometry',
+                                stylers: [{color: '#f5f5f5'}, {lightness: 20}]
+                            }
+                        ]
+                    });
+
+                    if (centerPin) {
+                        new google.maps.Marker({
+                            position: {
+                                lat: centerPin.latitude,
+                                lng: centerPin.longitude
+                            },
+                            map: map,
+                        });
+                    }
+
+                    const bounds = [];
+                    const latitudeLongitudeBounds = new google.maps.LatLngBounds();
+                    Object.values(this.$wire.renderedPickupPoints).forEach(pickupPoint => {
+                        const position = {
+                            lat: parseFloat(pickupPoint.coordGeolocalisationLatitude),
+                            lng: parseFloat(pickupPoint.coordGeolocalisationLongitude)
+                        };
+                        bounds.push(position);
+                        const marker = new google.maps.Marker({
+                            position,
+                            map: map,
+                        });
+
+                        marker.addListener('click', () => {
+                            this.openMapLocation(pickupPoint);
+                        });
+                    });
+
+                    // Set bounds if multiple locations
+                    if (bounds.length > 1) {
+                        bounds.forEach(function (bound) {
+                            latitudeLongitudeBounds.extend(bound);
+                        });
+                        map.fitBounds(latitudeLongitudeBounds);
+                    }
+
+                    // Center if single location
+                    if (bounds.length === 1) {
+                        map.setCenter(bounds[0]);
+                    }
+                },
+                openRelayFinderPopup() {
+                    this.scrollLock(true);
+                    this.$nextTick(() => {
+                        this.$refs && this.$refs.relayFinderPopupDialog && hyva.trapFocus(this.$refs.relayFinderPopupDialog)
+                    })
+
+                    if (!this.open && this.$wire.pickupPoints.length === 0) {
+                        this.loading = true;
+                        this.$wire.getPickupPoints().then(() => {
+                            this.loading = false
+                            this.renderMap();
+
+                            if (this.$wire.errors.length) {
+                                this.setErrorMessages(this.$wire.errors);
+                                this.errors = this.$wire.errors.length;
+                            } else {
+                                this.errors = 0;
+                                this.errorMessages = [];
+                            }
+                        });
+                    }
+
+                    this.open = true;
+                },
+
+                closeRelayFinderPopup() {
+                    this.open = false;
+                    this.scrollLock(false);
+                    this.$refs && this.$refs.relayFinderPopupDialog && hyva.releaseFocus(this.$refs.relayFinderPopupDialog);
+                },
+                clearValidationError() {
+                    this.validationError = null;
+                },
+                updatePickupPointsListByLatLng(latitude, longitude, addressComponents) {
+                    this.loading = true;
+                    this.$wire.getPickupPointsForLatlng(latitude, longitude, addressComponents).then(() => {
+                        this.loading = false;
+                        this.renderMap({latitude, longitude});
+
+                        this.errors = 0;
+                        this.errorMessages = [];
+                        if (this.$wire.errors.length) {
+                            this.setErrorMessages(this.$wire.errors);
+                            this.errors = this.$wire.errors.length;
+                        }
+                    }).catch(() => {
+                        this.loading = false;
+                        this.validationError = '<?= $escaper->escapeJs(__('Failed to find pickup points near your location')) ?>';
+                    });
+                },
+                getGeolocation() {
+                    if (!navigator.geolocation) {
+                        this.validationError = '<?= $escaper->escapeJs(__('Geolocation is not supported by this browser')) ?>';
+                        return;
+                    }
+
+                    this.clearValidationError();
+                    this.loading = true;
+
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const latitude = position.coords.latitude;
+                            const longitude = position.coords.longitude;
+
+                            this.updatePickupPointsListByLatLng(latitude, longitude);
+                        },
+                        (error) => {
+                            this.loading = false;
+
+                            let errorMessage;
+                            switch (error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage = '<?= $escaper->escapeJs(__('Location access denied. Please allow location access or enter your zipcode manually.')) ?>';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage = '<?= $escaper->escapeJs(__('Location information is unavailable. Please enter your zipcode manually.')) ?>';
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage = '<?= $escaper->escapeJs(__('Location request timed out. Please enter your zipcode manually.')) ?>';
+                                    break;
+                                default:
+                                    errorMessage = '<?= $escaper->escapeJs(__('An unknown error occurred while getting your location.')) ?>';
+                                    break;
+                            }
+
+                            this.validationError = errorMessage;
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 300000 // 5 minutes
+                        }
+                    );
+                }
+            }
+        }
+
+        window.addEventListener(
+            'alpine:init',
+            () => Alpine.data('initRelayFinder', initRelayFinder),
+            {once: true}
+        )
+    </script>
+    <?php $hyvaCsp->registerInlineScript() ?>
+
+    <script>
+        function colissimoPickupPoint() {
+            return {
+                open: false,
+                pickupPoint: null,
+
+                init() {
+                    this.pickupPoint = JSON.parse(this.$root.dataset.pickuppoint)
+                },
+
+                isOpen() {
+                    return this.open;
+                },
+                toggleOpen() {
+                    this.open = !this.open;
+                },
+
+                isDisabled() {
+                    return this.$wire.selectedPickupPointId === this.pickupPoint.identifiant;
+                },
+
+                selectPickupPoint() {
+                    this.$wire.selectPickupPoint(this.pickupPoint.identifiant);
+                    window.dispatchEvent(new CustomEvent('relay-point-picked', {detail: {pickupPoint: this.pickupPoint}}));
+                },
+
+                selectedPickupPointText() {
+                    return this.$wire.selectedPickupPointId === this.pickupPoint.identifiant ? '<?= $escaper->escapeJs(__('Selected')) ?>' : '<?= $escaper->escapeJs(__('Select this pickup point')) ?>'
+                }
+            }
+        }
+
+        window.addEventListener(
+            'alpine:init',
+            () => Alpine.data('colissimoPickupPoint', colissimoPickupPoint),
+            {once: true}
+        )
+    </script>
+    <?php $hyvaCsp->registerInlineScript() ?>
+
+    <script>
+        function colissimoRelayFinderLink() {
+            return {
+                openLink() {
+                    this.$dispatch('open-relay-finder-popup')
+                }
+            }
+        }
+
+        window.addEventListener(
+            'alpine:init',
+            () => Alpine.data('colissimoRelayFinderLink', colissimoRelayFinderLink),
+            {once: true}
+        )
+    </script>
+    <?php $hyvaCsp->registerInlineScript() ?>
+
+</div>
+

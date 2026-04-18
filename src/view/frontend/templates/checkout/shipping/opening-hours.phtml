@@ -1,0 +1,41 @@
+<?php
+/** @var \ControlAltDelete\ColissimoHyva\Block\Checkout\Shipping\OpeningHours $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$pickupPoint = $block->getPickupPoint();
+$dayOfWeek = (int) date('w');
+
+$days = [
+    [1, __('Monday'),    $pickupPoint->horairesOuvertureLundi],
+    [2, __('Tuesday'),   $pickupPoint->horairesOuvertureMardi],
+    [3, __('Wednesday'), $pickupPoint->horairesOuvertureMercredi],
+    [4, __('Thursday'),  $pickupPoint->horairesOuvertureJeudi],
+    [5, __('Friday'),    $pickupPoint->horairesOuvertureVendredi],
+    [6, __('Saturday'),  $pickupPoint->horairesOuvertureSamedi],
+    [0, __('Sunday'),    $pickupPoint->horairesOuvertureDimanche],
+];
+
+$maxSlots = 0;
+foreach ($days as [, , $rawHours]) {
+    $maxSlots = max($maxSlots, count($block->getHours($rawHours)));
+}
+$maxSlots = max($maxSlots, 1);
+
+$slotColumns = str_repeat(' auto', $maxSlots);
+?>
+<div class="grid gap-x-6 gap-y-2 text-xs mb-8" style="grid-template-columns: 1fr<?= /* @noEscape */ $slotColumns ?>;">
+    <?php foreach ($days as [$dayIndex, $dayLabel, $rawHours]): ?>
+        <?php $hours = $block->getHours($rawHours); ?>
+        <?php $boldClass = $dayOfWeek === $dayIndex ? 'font-bold' : ''; ?>
+        <span class="text-gray-700 <?= /* @noEscape */ $boldClass ?>">
+            <?= $escaper->escapeHtml($dayLabel); ?>
+        </span>
+        <?php for ($i = 0; $i < $maxSlots; $i++): ?>
+            <span class="tabular-nums text-right <?= /* @noEscape */ $boldClass ?>">
+                <?php if (isset($hours[$i])): ?>
+                    <?= $escaper->escapeHtml($hours[$i]['start']); ?> - <?= $escaper->escapeHtml($hours[$i]['end']); ?>
+                <?php endif; ?>
+            </span>
+        <?php endfor; ?>
+    <?php endforeach; ?>
+</div>

@@ -1,0 +1,85 @@
+<?php
+use ControlAltDelete\ColissimoHyva\Block\Checkout\Shipping\OpeningHours;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as PriceFormatter;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\LucideIcons;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var \ControlAltDelete\ColissimoHyva\Block\Checkout\Shipping\RelayPoint $block */
+
+$icons = $viewModels->require(LucideIcons::class);
+$priceFormatter = $viewModels->require(PriceFormatter::class);
+
+/** @var \Project\Colissimo\Wsdl\Types\RelayPoint $pickupPoint */
+$pickupPoint = $block->getData('pickupPoint');
+
+/** @var int $price */
+$price = $block->getData('price');
+?>
+<div class="pickup-point-item p-4 border-b border-theme-gray-200"
+     x-data="colissimoPickupPoint"
+     data-pickuppoint="<?= $escaper->escapeHtmlAttr(json_encode($pickupPoint))?>"
+     wire:key="<?= $escaper->escapeHtmlAttr($pickupPoint->identifiant)?>"
+>
+    <div class="flex justify-between items-start mb-4">
+        <h2 class="font-semibold text-gray-900">
+            <?= $escaper->escapeHtml($pickupPoint->nom) ?>
+        </h2>
+        <div class="flex items-center text-orange-500 ml-4">
+            <div class="package-icon mr-1"></div>
+            <span class="text-sm font-medium">
+                <?= $escaper->escapeHtml($block->formatDistance($pickupPoint->distanceEnMetre)); ?>
+            </span>
+        </div>
+    </div>
+
+    <div class="mb-4 text-gray-700">
+        <div><?= $escaper->escapeHtml($pickupPoint->adresse1); ?></div>
+        <?php if ($pickupPoint->adresse2): ?>
+            <div><?= $escaper->escapeHtml($pickupPoint->adresse2); ?></div>
+        <?php endif; ?>
+        <?php if ($pickupPoint->adresse3): ?>
+            <div><?= $escaper->escapeHtml($pickupPoint->adresse3); ?></div>
+        <?php endif; ?>
+        <div><?= $escaper->escapeHtml($pickupPoint->codePostal); ?> - <?= $escaper->escapeHtml($pickupPoint->localite); ?></div>
+    </div>
+
+    <div class="mb-4">
+        <div class="text-gray-900 mb-1"><?= $escaper->escapeHtml(__('Estimated delivery')); ?></div>
+        <div class="flex justify-between">
+            <div class="text-green-600">
+                <?= $escaper->escapeHtml(__('Within 48 to 72 working hours')); ?>
+            </div>
+            <div class="text-right mt-2">
+                <span class="font-bold text-gray-900"><?= $escaper->escapeHtml($priceFormatter->currency($price)); ?></span>
+            </div>
+        </div>
+    </div>
+
+    <a href="#" @click.prevent="toggleOpen">
+        <span class="underline"><?= $escaper->escapeHtml(__('See the timetables')); ?></span>
+        <?= $icons->renderHtml(
+            'chevron-up',
+            'inline-block size-4',
+            24,
+            24,
+            [':class' => 'chevronClass']
+        ) ?>
+    </a>
+
+    <div x-show="isOpen" class="mt-2">
+        <?= $block->getLayout()->createBlock(
+            OpeningHours::class,
+            '',
+            ['data' => ['pickupPoint' => $pickupPoint]]
+        )->toHtml(); ?>
+    </div>
+    <button @click="selectPickupPoint"
+            :disabled="isDisabled"
+            class="btn btn-primary mt-4">
+        <span x-text="selectedPickupPointText"></span>
+    </button>
+</div>

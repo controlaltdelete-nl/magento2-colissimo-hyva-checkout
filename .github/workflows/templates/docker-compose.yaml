@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  magento:
+    image: ghcr.io/controlaltdelete-nl/magento2-in-a-box/magento-project-community-edition:${PHP_VERSION}-magento${MAGENTO_VERSION}-sample-data
+    container_name: magento-project-community-edition
+    ports:
+      - "80:80"
+    environment:
+      - COLISSIMO_ACCOUNT_ID
+      - COLISSIMO_ACCOUNT_PASSWORD
+      - HYVA_SSH_PRIVATE_KEY
+      - GOOGLE_MAPS_API_KEY
+    volumes:
+      - ../../../magento-logs:/data/var/log
+      - ./magento/install-hyva.sh:/data/install-hyva.sh
+      - ./magento/merge-config.php.stub:/data/merge-config.php.stub
+      - ./magento/merge-config.php:/data/merge-config.php
