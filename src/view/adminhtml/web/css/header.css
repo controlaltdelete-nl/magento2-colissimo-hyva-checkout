@@ -1,0 +1,94 @@
+.cad-config-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 24px;
+    margin: 0 0 20px;
+    background-color: #f4f4f4;
+    border-left: 4px solid #ff6b00;
+    border-radius: 2px;
+}
+
+.cad-config-header__content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.cad-config-header__tagline {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #303030;
+}
+
+.cad-config-header__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+}
+
+.cad-config-header__links li {
+    margin: 0;
+    padding: 0;
+}
+
+.cad-config-header__links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #1979c3;
+    text-decoration: none;
+}
+
+.cad-config-header__links a:hover,
+.cad-config-header__links a:focus {
+    color: #ff6b00;
+    text-decoration: underline;
+}
+
+.cad-config-header__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+    color: #ff6b00;
+}
+
+.cad-config-header__logo {
+    flex: 0 0 auto;
+    width: 64px;
+    height: auto;
+    align-self: center;
+}
+
+@media (max-width: 1024px) {
+    .cad-config-header {
+        gap: 16px;
+        padding: 16px 20px;
+    }
+
+    .cad-config-header__links {
+        gap: 8px 16px;
+    }
+
+    .cad-config-header__logo {
+        width: 48px;
+    }
+}
+
+@media (max-width: 768px) {
+    .cad-config-header {
+        flex-wrap: wrap;
+    }
+
+    .cad-config-header__logo {
+        order: -1;
+        width: 40px;
+    }
+}

@@ -6,6 +6,7 @@
             <group id="lpc_group">
                 <group id="google_maps" translate="label" type="text" sortOrder="1000" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Hyvä Checkout integration</label>
+                    <frontend_model>ControlAltDelete\ColissimoHyva\Block\Adminhtml\System\Config\Header</frontend_model>
                     <field id="api_key" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
                         <label>Api key</label>
                         <config_path>controlaltdelete_colissimo_hyva/google_maps/api_key</config_path>

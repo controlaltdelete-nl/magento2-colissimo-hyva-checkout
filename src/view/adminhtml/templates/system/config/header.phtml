@@ -1,0 +1,29 @@
+<?php
+/** @var \ControlAltDelete\ColissimoHyva\Block\Adminhtml\System\Config\Header $block */
+
+$logoUrl = $block->getViewFileUrl('ControlAltDelete_ColissimoHyva::images/control-alt-delete-logo-icon.svg');
+?>
+<div class="cad-config-header">
+    <div class="cad-config-header__content">
+        <p class="cad-config-header__tagline">
+            <?= $block->escapeHtml(__('Developed by Control Alt Delete, a Magento-only eCommerce agency based in the Netherlands. We specialise in Hyvä Checkout integrations and automated testing.')) ?>
+        </p>
+        <ul class="cad-config-header__links">
+            <li>
+                <a href="https://www.controlaltdelete.dev/checkout-services/hyva-checkout" target="_blank" rel="noopener">
+                    <span class="cad-config-header__icon" aria-hidden="true">&#9873;</span>
+                    <?= $block->escapeHtml(__('Visit Control Alt Delete')) ?>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.controlaltdelete.dev/contact" target="_blank" rel="noopener">
+                    <span class="cad-config-header__icon" aria-hidden="true">&#9993;</span>
+                    <?= $block->escapeHtml(__('Contact Control Alt Delete')) ?>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <img class="cad-config-header__logo"
+         src="<?= $block->escapeUrl($logoUrl) ?>"
+         alt="<?= $block->escapeHtmlAttr(__('Control Alt Delete')) ?>" />
+</div>
