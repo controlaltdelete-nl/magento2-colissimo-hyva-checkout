@@ -19,7 +19,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\LayoutInterface;
 use Magento\Quote\Model\Cart\ShippingMethod;
-use Magento\Quote\Model\ResourceModel\Quote\Address;
 use Magewirephp\Magewire\Component;
 use Psr\Log\LoggerInterface;
 
@@ -42,7 +41,6 @@ class RelayPicker extends Component implements EvaluationInterface
         private readonly GetLocationFromGoogleMaps $getLocationFromGoogleMaps,
         private readonly Config $config,
         private readonly ScopeConfigInterface $scopeConfig,
-        private readonly Address $addressResource,
     ) {}
 
     public function getDefaultCountry(): string
@@ -156,26 +154,10 @@ class RelayPicker extends Component implements EvaluationInterface
             'country' => $relayPoint->codePays,
         ];
 
-        $this->setQuoteShippingAddress($relayInformation);
-
         $this->checkoutSession->setLpcRelayInformation($relayInformation);
         $this->selectedPickupPointId = $identifiant;
         $this->dispatchBrowserEvent('close-relay-finder-popup');
         $this->emit('relay-point-picked');
-        $this->emit('shipping_address_saved');
-    }
-
-    protected function setQuoteShippingAddress(array $relayInformation): void
-    {
-        $shippingAddress = $this->checkoutSession->getQuote()->getShippingAddress();
-
-        $shippingAddress
-            ->setStreet($relayInformation['address'])
-            ->setPostcode($relayInformation['post_code'])
-            ->setCity($relayInformation['city'])
-            ->setCountryId($relayInformation['country']);
-
-        $this->addressResource->save($shippingAddress);
     }
 
     private function fetchPickupPoints(string $postalCode, string $city, ?string $address = null, ?string $countryCode = null): void
