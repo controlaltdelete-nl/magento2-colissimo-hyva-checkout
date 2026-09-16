@@ -23,6 +23,7 @@ test('Can make an successful order/pay in one page view', async ({ page }) => {
     await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
 
     await page.getByRole('group', { name: 'Mode de paiement' }).locator('label').click();
+    await waitForMagewireIdle(page);
     await page.getByRole('button', {name: 'Passez la commande' }).click();
 
     await expect(page).toHaveURL(new RegExp(`checkout/onepage/success`), { timeout: 30000 });
@@ -39,6 +40,7 @@ test('Cant go to payment without selecting pickup point',  async ({ page }) => {
     await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
     await page.locator('label', { hasText: 'Check / Money order' }).click();
     await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
+    await waitForMagewireIdle(page);
 
     await page.getByRole('button', {name: 'Passez la commande' }).click();
 

@@ -5,6 +5,8 @@ on:
     types:
       - opened
       - labeled
+  schedule:
+    - cron: '0 23 * * 4'
 
 jobs:
   secrets-gate:
