@@ -171,16 +171,20 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                 currentLocation: null,
                 debounceTimeout: null,
                 validationError: null,
+                isSearchInitialized: false,
 
-                init() {
-                    this.loadGoogleMapsApi(() => {
-                        this.$refs.relayFinderPopupDialogSearch.addEventListener('gmp-select', async ({placePrediction}) => {
-                            const place = placePrediction.toPlace();
-                            await place.fetchFields({fields: ['location', 'addressComponents']});
+                initSearch() {
+                    if (this.isSearchInitialized) {
+                        return;
+                    }
 
-                            this.updatePickupPointsListByLatLng(place.location.lat(), place.location.lng(), place.addressComponents);
-                        });
-                    })
+                    this.isSearchInitialized = true;
+                    this.$refs.relayFinderPopupDialogSearch.addEventListener('gmp-select', async ({placePrediction}) => {
+                        const place = placePrediction.toPlace();
+                        await place.fetchFields({fields: ['location', 'addressComponents']});
+
+                        this.updatePickupPointsListByLatLng(place.location.lat(), place.location.lng(), place.addressComponents);
+                    });
                 },
 
                 isOpen() {
@@ -258,18 +262,19 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                     document.body.style.overflow = use ? "hidden" : "";
                 },
                 loadGoogleMapsApi(callback) {
-                    if (document.getElementById('google-maps-script')) {
-                        callback();
-                        return;
+                    if (!window.colissimoGoogleMapsLoaded) {
+                        window.colissimoGoogleMapsLoaded = new Promise(resolve => {
+                            const script = document.createElement('script');
+                            script.type = 'text/javascript';
+                            script.id = 'google-maps-script';
+                            script.src = 'https://maps.googleapis.com/maps/api/js?libraries=places,marker&key=<?= $escaper->escapeJs($magewire->getGoogleMapsApiKey()) ?>&loading=async&callback=initGoogleMapsLibrary';
+
+                            window.initGoogleMapsLibrary = resolve;
+                            document.head.appendChild(script);
+                        });
                     }
 
-                    const script = document.createElement('script');
-                    script.type = 'text/javascript';
-                    script.id = 'google-maps-script';
-                    script.src = 'https://maps.googleapis.com/maps/api/js?libraries=places,marker&key=<?= $escaper->escapeJs($magewire->getGoogleMapsApiKey()) ?>&loading=async&callback=initGoogleMapsLibrary';
-
-                    window.initGoogleMapsLibrary = () => callback();
-                    document.head.appendChild(script);
+                    window.colissimoGoogleMapsLoaded.then(() => callback());
                 },
                 async renderMap(centerPin) {
                     const {Map} = await google.maps.importLibrary("maps");
@@ -336,6 +341,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                     }
                 },
                 openRelayFinderPopup() {
+                    this.loadGoogleMapsApi(() => this.initSearch());
                     this.scrollLock(true);
                     this.$nextTick(() => {
                         this.$refs && this.$refs.relayFinderPopupDialog && hyva.trapFocus(this.$refs.relayFinderPopupDialog)
@@ -345,7 +351,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                         this.loading = true;
                         this.$wire.getPickupPoints().then(() => {
                             this.loading = false
-                            this.renderMap();
+                            this.loadGoogleMapsApi(() => this.renderMap());
 
                             if (this.$wire.errors.length) {
                                 this.setErrorMessages(this.$wire.errors);
@@ -372,7 +378,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                     this.loading = true;
                     this.$wire.getPickupPointsForLatlng(latitude, longitude, addressComponents).then(() => {
                         this.loading = false;
-                        this.renderMap({latitude, longitude});
+                        this.loadGoogleMapsApi(() => this.renderMap({latitude, longitude}));
 
                         this.errors = 0;
                         this.errorMessages = [];
