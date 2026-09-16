@@ -34,6 +34,8 @@ $slotColumns = str_repeat(' auto', $maxSlots);
             <span class="tabular-nums text-right <?= /* @noEscape */ $boldClass ?>">
                 <?php if (isset($hours[$i])): ?>
                     <?= $escaper->escapeHtml($hours[$i]['start']); ?> - <?= $escaper->escapeHtml($hours[$i]['end']); ?>
+                <?php elseif ($i === 0): ?>
+                    <?= $escaper->escapeHtml(__('Closed')); ?>
                 <?php endif; ?>
             </span>
         <?php endfor; ?>

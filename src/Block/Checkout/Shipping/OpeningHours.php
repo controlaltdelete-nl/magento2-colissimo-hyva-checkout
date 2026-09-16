@@ -8,6 +8,8 @@ use Magento\Framework\View\Element\Template;
 
 class OpeningHours extends Template
 {
+    private const CLOSED_HOUR_RANGE = '00:00-00:00';
+
     protected $_template = 'ControlAltDelete_ColissimoHyva::checkout/shipping/opening-hours.phtml';
 
     public function getPickupPoint(): object
@@ -17,16 +19,18 @@ class OpeningHours extends Template
 
     public function getHours(string $hours): array
     {
-        $hours = str_replace(' 00:00-00:00', '', $hours);
+        $hourRanges = array_filter(
+            explode(' ', trim($hours)),
+            fn (string $hourRange): bool => $hourRange !== '' && $hourRange !== self::CLOSED_HOUR_RANGE
+        );
 
-        $hourRanges = explode(' ', $hours);
-        foreach ($hourRanges as $index => $hourRange) {
-            $parts = explode('-', $hourRange);
-            $parts = array_map('ltrim', $parts);
+        return array_values(array_map(
+            function (string $hourRange): array {
+                [$start, $end] = array_pad(explode('-', $hourRange), 2, '');
 
-            $hourRanges[$index] = ['start' => $parts[0], 'end' => $parts[1]];
-        }
-
-        return $hourRanges;
+                return ['start' => $start, 'end' => $end];
+            },
+            $hourRanges
+        ));
     }
 }
