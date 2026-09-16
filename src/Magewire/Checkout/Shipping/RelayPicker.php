@@ -100,6 +100,11 @@ class RelayPicker extends Component
             $countryCode ??= $location['countryCode'];
         }
 
+        if ($postalCode === null || $city === null) {
+            $this->errors = [__('We could not find a postcode for this location. Please enter a more specific address.')];
+            return;
+        }
+
         $this->fetchPickupPoints($postalCode, $city, $address, $countryCode);
     }
 
