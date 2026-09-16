@@ -8,9 +8,6 @@ use ControlAltDelete\ColissimoHyva\Block\Checkout\Shipping\RelayPoint;
 use ControlAltDelete\ColissimoHyva\Config;
 use ControlAltDelete\ColissimoHyva\Service\GetLocationFromGoogleMaps;
 use Exception;
-use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
-use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
-use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 use Hyva\Checkout\ViewModel\Checkout\Shipping\MethodList;
 use LaPoste\Colissimo\Model\RelaysWebservice\GenerateRelaysPayload;
 use LaPoste\Colissimo\Model\RelaysWebservice\RelaysApi;
@@ -22,7 +19,7 @@ use Magento\Quote\Model\Cart\ShippingMethod;
 use Magewirephp\Magewire\Component;
 use Psr\Log\LoggerInterface;
 
-class RelayPicker extends Component implements EvaluationInterface
+class RelayPicker extends Component
 {
     public array $pickupPoints = [];
     public array $renderedPickupPoints = [];
@@ -264,25 +261,5 @@ class RelayPicker extends Component implements EvaluationInterface
         }
 
         return 0.0;
-    }
-
-    public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
-    {
-        $shippingMethod = $this->checkoutSession->getQuote()->getShippingAddress()->getShippingMethod();
-
-        if ($shippingMethod !== 'colissimo_pr') {
-            return $resultFactory->createSuccess();
-        }
-
-        $relayInfo = $this->checkoutSession->getLpcRelayInformation();
-
-        if (!empty($relayInfo['id'])) {
-            return $resultFactory->createSuccess();
-        }
-
-        return $resultFactory->createErrorMessage()
-            ->withMessage(__('Please select a pickup point before proceeding.')->render())
-            ->withVisibilityDuration(5000)
-            ->asError();
     }
 }
