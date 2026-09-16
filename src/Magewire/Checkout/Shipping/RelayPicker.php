@@ -72,21 +72,19 @@ class RelayPicker extends Component implements EvaluationInterface
 
     public function getPickupPointsForLatlng(float $latitude, float $longitude, ?array $addressComponents = null): void
     {
-        $quote = $this->checkoutSession->getQuote();
-        $shippingAddress = $quote->getShippingAddress();
-        $countryId = $shippingAddress->getCountryId();
-
         $city = null;
         $postalCode = null;
         $address = null;
         $number = null;
         $street = null;
+        $countryCode = null;
 
         if ($addressComponents !== null) {
             $postalCode = $this->getFromAddressComponents($addressComponents, 'postal_code');
             $city = $this->getFromAddressComponents($addressComponents, 'locality');
             $number = $this->getFromAddressComponents($addressComponents, 'street_number');
             $street = $this->getFromAddressComponents($addressComponents, 'route');
+            $countryCode = $this->getFromAddressComponents($addressComponents, 'country', 'shortText');
         }
 
         if ($number && $street) {
@@ -95,15 +93,19 @@ class RelayPicker extends Component implements EvaluationInterface
 
         if ($postalCode === null || $city === null) {
             try {
-                ['postalCode' => $postalCode, 'city' => $city] = $this->getLocationFromGoogleMaps->byLatitudeLongitude($countryId, $latitude, $longitude);
+                $location = $this->getLocationFromGoogleMaps->byLatitudeLongitude($this->getShippingCountryCode(), $latitude, $longitude);
             } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage(), $exception->getTrace());
                 $this->errors = [__('An error occurred while fetching pickup points. Please try again later.')];
                 return;
             }
+
+            $postalCode ??= $location['postalCode'];
+            $city ??= $location['city'];
+            $countryCode ??= $location['countryCode'];
         }
 
-        $this->fetchPickupPoints($postalCode, $city, $address);
+        $this->fetchPickupPoints($postalCode, $city, $address, $countryCode);
     }
 
     public function getStartingLatitude(): float
@@ -176,13 +178,13 @@ class RelayPicker extends Component implements EvaluationInterface
         $this->addressResource->save($shippingAddress);
     }
 
-    private function fetchPickupPoints(string $postalCode, string $city, ?string $address = null): void
+    private function fetchPickupPoints(string $postalCode, string $city, ?string $address = null, ?string $countryCode = null): void
     {
         if (!$postalCode || !$city) {
             ['postalCode' => $postalCode, 'city' => $city] = $this->getDefaultLocation();
         }
 
-        $countryCode = $this->checkoutSession->getQuote()->getShippingAddress()->getCountryId() ?: $this->getDefaultCountry();
+        $countryCode = $countryCode ?: $this->getShippingCountryCode();
 
         try {
             $this->renderedPickupPoints = [];
@@ -252,11 +254,16 @@ class RelayPicker extends Component implements EvaluationInterface
         ];
     }
 
-    private function getFromAddressComponents(array $addressComponents, string $type): ?string
+    private function getShippingCountryCode(): string
+    {
+        return $this->checkoutSession->getQuote()->getShippingAddress()->getCountryId() ?: $this->getDefaultCountry();
+    }
+
+    private function getFromAddressComponents(array $addressComponents, string $type, string $textKey = 'longText'): ?string
     {
         foreach ($addressComponents as $component) {
             if (in_array($type, $component['types'])) {
-                return $component['longText'];
+                return $component[$textKey] ?? null;
             }
         }
 

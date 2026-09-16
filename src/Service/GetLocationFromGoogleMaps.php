@@ -57,8 +57,9 @@ class GetLocationFromGoogleMaps
             return $result['geometry']['location'] ?? [];
         }
 
-        $city       = null;
-        $postalCode = null;
+        $city        = null;
+        $postalCode  = null;
+        $countryCode = null;
 
         foreach ($result['address_components'] as $component) {
             $types = $component['types'];
@@ -67,6 +68,8 @@ class GetLocationFromGoogleMaps
                 $city = $component['long_name'];
             } elseif (in_array('postal_code', $types)) {
                 $postalCode = $component['long_name'];
+            } elseif (in_array('country', $types)) {
+                $countryCode = $component['short_name'];
             }
         }
 
@@ -81,8 +84,9 @@ class GetLocationFromGoogleMaps
         }
 
         return [
-            'city'       => $city,
-            'postalCode' => $postalCode,
+            'city'        => $city,
+            'postalCode'  => $postalCode,
+            'countryCode' => $countryCode,
         ];
     }
 
