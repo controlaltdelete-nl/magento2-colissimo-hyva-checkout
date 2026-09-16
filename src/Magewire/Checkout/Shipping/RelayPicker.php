@@ -27,6 +27,12 @@ class RelayPicker extends Component
     public float $price = 0.0;
     public array $errors = [];
     public ?string $selectedPickupPointId = null;
+    public ?string $pickupPointsShippingAddress = null;
+
+    protected $listeners = [
+        'shipping_address_saved' => 'refreshPickupPointsWhenShippingAddressChanged',
+        'customer_shipping_address_saved' => 'refreshPickupPointsWhenShippingAddressChanged',
+    ];
 
     public function __construct(
         private readonly LoggerInterface $logger,
@@ -106,6 +112,21 @@ class RelayPicker extends Component
         }
 
         $this->fetchPickupPoints($postalCode, $city, $address, $countryCode);
+    }
+
+    public function refreshPickupPointsWhenShippingAddressChanged(): void
+    {
+        if ($this->pickupPointsShippingAddress === null
+            || $this->pickupPointsShippingAddress === $this->getShippingAddressFingerprint()) {
+            return;
+        }
+
+        $this->pickupPoints = [];
+        $this->renderedPickupPoints = [];
+        $this->errors = [];
+        $this->pickupPointsShippingAddress = null;
+
+        $this->getPickupPoints();
     }
 
     public function getStartingLatitude(): float
@@ -192,6 +213,7 @@ class RelayPicker extends Component
             }
 
             $this->pickupPoints = $result->return->listePointRetraitAcheminement ?? [];
+            $this->pickupPointsShippingAddress = $this->getShippingAddressFingerprint();
         } catch (LocalizedException $e) {
             $this->logger->error($e->getMessage(), $e->getTrace());
             $this->errors = [__('An error occurred while fetching pickup points. Please try again later.')];
@@ -236,6 +258,18 @@ class RelayPicker extends Component
             'postalCode' => null,
             'city' => null,
         ];
+    }
+
+    private function getShippingAddressFingerprint(): string
+    {
+        $shippingAddress = $this->checkoutSession->getQuote()->getShippingAddress();
+
+        return implode('|', [
+            $shippingAddress->getCountryId(),
+            $shippingAddress->getPostcode(),
+            $shippingAddress->getCity(),
+            implode(' ', $shippingAddress->getStreet()),
+        ]);
     }
 
     private function getShippingCountryCode(): string
