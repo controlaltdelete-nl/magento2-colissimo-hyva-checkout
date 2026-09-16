@@ -54,7 +54,7 @@ jobs:
             VERSION: magento2.4.8-p3
           - PHP_VERSION: php84-fpm
             IMAGE_NAME: mage-os-community-edition
-            VERSION: mage-os3.5.0
+            VERSION: mage-os2.3.0
 
     runs-on: ubuntu-latest
     env:
