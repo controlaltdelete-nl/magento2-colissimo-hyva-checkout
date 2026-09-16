@@ -286,6 +286,12 @@ class RelayPicker extends Component implements EvaluationInterface
 
     public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
     {
+        $shippingMethod = $this->checkoutSession->getQuote()->getShippingAddress()->getShippingMethod();
+
+        if ($shippingMethod !== 'colissimo_pr') {
+            return $resultFactory->createSuccess();
+        }
+
         $relayInfo = $this->checkoutSession->getLpcRelayInformation();
 
         if (!empty($relayInfo['id'])) {
