@@ -76,7 +76,7 @@ The selected relay point is saved to the quote and passed along to the order, ma
 | Dependency | Version |
 |---|---|
 | PHP | 8.1 or higher |
-| Magento | 2.4.4 or higher |
+| Magento | 2.4.7 or higher |
 | [La Poste Colissimo module](https://commercemarketplace.adobe.com/laposte-magento2-colissimo-module.html) | * |
 | Hyvä Checkout | 1.3 or higher |
 | Google Maps API key | -- |

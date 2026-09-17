@@ -46,8 +46,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - NAME: Magento 2.4.4-p13
-            IMAGE: magento-project-community-edition:php81-fpm-magento2.4.4-p13-sample-data
+          - NAME: Magento 2.4.7-p10
+            IMAGE: magento-project-community-edition:php82-fpm-magento2.4.7-p10-sample-data
           - NAME: Magento latest
             IMAGE: magento-project-community-edition:latest-sample-data
           - NAME: Mage-OS latest
