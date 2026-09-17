@@ -16,3 +16,4 @@ services:
       - ./magento/install-hyva.sh:/data/install-hyva.sh
       - ./magento/merge-config.php.stub:/data/merge-config.php.stub
       - ./magento/merge-config.php:/data/merge-config.php
+      - ./magento/prepare-integration-phpunit-xml.php:/data/prepare-integration-phpunit-xml.php

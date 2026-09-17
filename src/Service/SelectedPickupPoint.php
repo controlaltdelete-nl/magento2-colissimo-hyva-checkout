@@ -6,6 +6,7 @@ namespace ControlAltDelete\ColissimoHyva\Service;
 
 class SelectedPickupPoint
 {
+    /** @param array<string, string> $information */
     public function __construct(
         private readonly array $information
     ) {}
@@ -15,6 +16,7 @@ class SelectedPickupPoint
         return $this->information['name'] ?? 'Selected Relay Point';
     }
 
+    /** @return list<string> */
     public function getAddressLines(): array
     {
         $addressLines = [];
@@ -23,9 +25,10 @@ class SelectedPickupPoint
             $addressLines[] = $this->information['address'];
         }
 
-        $cityLine = trim(($this->information['post_code'] ?? '') . ' - ' . ($this->information['city'] ?? ''));
-        if ($cityLine !== ' - ') {
-            $addressLines[] = $cityLine;
+        $postCode = $this->information['post_code'] ?? '';
+        $city = $this->information['city'] ?? '';
+        if ($postCode !== '' || $city !== '') {
+            $addressLines[] = trim($postCode . ' - ' . $city, ' -');
         }
 
         return $addressLines;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 use ControlAltDelete\ColissimoHyva\Magewire\Checkout\Shipping\RelayPicker;
 use Hyva\Checkout\ViewModel\Checkout\Formatter as PriceFormatter;
 use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
 use Hyva\Theme\ViewModel\LucideIcons;
 use Hyva\Theme\ViewModel\SvgIcons;
 use LaPoste\Colissimo\Block\Selector;
@@ -16,6 +17,7 @@ use Magento\Framework\View\Element\Template;
 /** @var SvgIcons $icons */
 /** @var Template $block */
 /** @var RelayPicker $magewire */
+/** @var HyvaCsp $hyvaCsp */
 
 $icons = $viewModels->require(LucideIcons::class);
 $priceFormatter = $viewModels->require(PriceFormatter::class);
@@ -58,12 +60,12 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                 <div class="shrink-0">
                     <div class="p-5 lg:px-8.5 lg:py-6 border-b border-theme-gray-100 flex justify-between items-center">
                         <span id="relay-finder-popup-title" class="font-semibold lg:text-lg uppercase">
-                            <?= __('Relay point') ?>
+                            <?= $escaper->escapeHtml((string)__('Relay point')) ?>
                         </span>
                         <button
                             type="button"
                             @click="closeRelayFinderPopup"
-                            aria-label="<?= $escaper->escapeHtmlAttr(__('Close panel')) ?>"
+                            aria-label="<?= $escaper->escapeHtmlAttr((string)__('Close panel')) ?>"
                             class="btn btn-icon btn-gray mb-2"
                         >
                             <?= $icons->renderHtml('x', 'stroke-current', 24, 24, ['aria-hidden' => true]); ?>
@@ -95,7 +97,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                                         </gmp-place-autocomplete>
                                     </div>
                                 </div>
-                                <span><?= __('or') ?></span>
+                                <span><?= $escaper->escapeHtml((string)__('or')) ?></span>
                                 <div>
                                     <button
                                         class="border rounded-full flex justify-center items-center w-15 h-15"
@@ -116,7 +118,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                                 class="w-1/2 py-3.5 lg:py-6 text-center border-b border-theme-gray-200 text-theme-gray-400"
                                 :class="renderAsListButtonClass"
                             >
-                                <?= __('List') ?>
+                                <?= $escaper->escapeHtml((string)__('List')) ?>
                             </button>
 
                             <button
@@ -125,7 +127,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                                 class="w-1/2 py-3.5 lg:py-6 text-center border-b border-theme-gray-200 text-theme-gray-400"
                                 :class="renderAsMapButtonClass"
                             >
-                                <?= __('Map') ?>
+                                <?= $escaper->escapeHtml((string)__('Map')) ?>
                             </button>
                         </div>
                     </div>
@@ -282,8 +284,8 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                     let map = new Map(this.$refs['google-maps-relay'], {
                         zoom: 12,
                         center: {
-                            lat: <?= $escaper->escapeJs($magewire->getStartingLatitude()); ?>,
-                            lng: <?= $escaper->escapeJs($magewire->getStartingLongitude()); ?>
+                            lat: <?= $escaper->escapeJs((string)$magewire->getStartingLatitude()); ?>,
+                            lng: <?= $escaper->escapeJs((string)$magewire->getStartingLongitude()); ?>
                         },
                         styles: [
                             {
@@ -388,12 +390,12 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                         }
                     }).catch(() => {
                         this.loading = false;
-                        this.validationError = '<?= $escaper->escapeJs(__('Failed to find pickup points near your location')) ?>';
+                        this.validationError = '<?= $escaper->escapeJs((string)__('Failed to find pickup points near your location')) ?>';
                     });
                 },
                 getGeolocation() {
                     if (!navigator.geolocation) {
-                        this.validationError = '<?= $escaper->escapeJs(__('Geolocation is not supported by this browser')) ?>';
+                        this.validationError = '<?= $escaper->escapeJs((string)__('Geolocation is not supported by this browser')) ?>';
                         return;
                     }
 
@@ -413,16 +415,16 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                             let errorMessage;
                             switch (error.code) {
                                 case error.PERMISSION_DENIED:
-                                    errorMessage = '<?= $escaper->escapeJs(__('Location access denied. Please allow location access or enter your zipcode manually.')) ?>';
+                                    errorMessage = '<?= $escaper->escapeJs((string)__('Location access denied. Please allow location access or enter your zipcode manually.')) ?>';
                                     break;
                                 case error.POSITION_UNAVAILABLE:
-                                    errorMessage = '<?= $escaper->escapeJs(__('Location information is unavailable. Please enter your zipcode manually.')) ?>';
+                                    errorMessage = '<?= $escaper->escapeJs((string)__('Location information is unavailable. Please enter your zipcode manually.')) ?>';
                                     break;
                                 case error.TIMEOUT:
-                                    errorMessage = '<?= $escaper->escapeJs(__('Location request timed out. Please enter your zipcode manually.')) ?>';
+                                    errorMessage = '<?= $escaper->escapeJs((string)__('Location request timed out. Please enter your zipcode manually.')) ?>';
                                     break;
                                 default:
-                                    errorMessage = '<?= $escaper->escapeJs(__('An unknown error occurred while getting your location.')) ?>';
+                                    errorMessage = '<?= $escaper->escapeJs((string)__('An unknown error occurred while getting your location.')) ?>';
                                     break;
                             }
 
@@ -473,7 +475,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                 },
 
                 selectedPickupPointText() {
-                    return this.$wire.selectedPickupPointId === this.pickupPoint.identifiant ? '<?= $escaper->escapeJs(__('Selected')) ?>' : '<?= $escaper->escapeJs(__('Select this pickup point')) ?>'
+                    return this.$wire.selectedPickupPointId === this.pickupPoint.identifiant ? '<?= $escaper->escapeJs((string)__('Selected')) ?>' : '<?= $escaper->escapeJs((string)__('Select this pickup point')) ?>'
                 }
             }
         }

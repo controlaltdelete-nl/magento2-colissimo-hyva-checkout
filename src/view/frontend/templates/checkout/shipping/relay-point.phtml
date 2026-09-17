@@ -13,7 +13,7 @@ use Magento\Framework\Escaper;
 $icons = $viewModels->require(LucideIcons::class);
 $priceFormatter = $viewModels->require(PriceFormatter::class);
 
-/** @var \Project\Colissimo\Wsdl\Types\RelayPoint $pickupPoint */
+/** @var \stdClass $pickupPoint */
 $pickupPoint = $block->getData('pickupPoint');
 
 /** @var int $price */

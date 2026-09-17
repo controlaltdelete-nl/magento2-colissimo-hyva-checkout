@@ -1,0 +1,23 @@
+name: Lint PHP files
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  php-81:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: prestashop/github-action-php-lint/8.1@v2.3.1
+
+  php-82:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: prestashop/github-action-php-lint/8.2@v2.3.1
+
+  php-83:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: prestashop/github-action-php-lint/8.3@v2.3.1
+
+  php-84:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: prestashop/github-action-php-lint/8.4@v2.3.1

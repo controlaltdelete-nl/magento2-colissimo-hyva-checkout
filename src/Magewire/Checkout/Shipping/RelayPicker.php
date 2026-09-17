@@ -23,7 +23,10 @@ class RelayPicker extends Component
 {
     private const COLISSIMO_PICKUP_METHOD_CODE = 'colissimo_pr';
 
+    /** @var array<int, \stdClass|array<string, mixed>> */
     public array $pickupPoints = [];
+
+    /** @var array<string, array{identifiant: string, coordGeolocalisationLatitude: string, coordGeolocalisationLongitude: string, html: string}> */
     public array $renderedPickupPoints = [];
 
     public float $price = 0.0;
@@ -31,6 +34,7 @@ class RelayPicker extends Component
     public ?string $selectedPickupPointId = null;
     public ?string $pickupPointsShippingAddress = null;
 
+    /** @var array<string, string> */
     protected $listeners = [
         'shipping_address_saved' => 'refreshPickupPointsWhenShippingAddressChanged',
         'customer_shipping_address_saved' => 'refreshPickupPointsWhenShippingAddressChanged',
@@ -63,17 +67,18 @@ class RelayPicker extends Component
     {
         $quote = $this->checkoutSession->getQuote();
         $shippingAddress = $quote->getShippingAddress();
-        $postalCode = $shippingAddress->getPostcode();
-        $city = $shippingAddress->getCity();
+        $postalCode = (string)$shippingAddress->getPostcode();
+        $city = (string)$shippingAddress->getCity();
         $address = implode(' ', $shippingAddress->getStreet());
 
-        if ($postalCode === null || $city === null || !$address) {
+        if ($postalCode === '' || $city === '' || $address === '') {
             return;
         }
 
         $this->fetchPickupPoints($postalCode, $city, $address);
     }
 
+    /** @param list<array{longText: string, shortText: string, types: list<string>}>|null $addressComponents */
     public function getPickupPointsForLatlng(float $latitude, float $longitude, ?array $addressComponents = null): void
     {
         $city = null;
@@ -132,6 +137,7 @@ class RelayPicker extends Component
         $this->getPickupPoints();
     }
 
+    /** @param array<string, string> $shippingMethod */
     public function openPickerWhenNoPickupPointIsSelected(array $shippingMethod): void
     {
         if (($shippingMethod['code'] ?? null) !== self::COLISSIMO_PICKUP_METHOD_CODE) {
@@ -258,6 +264,7 @@ class RelayPicker extends Component
         }
     }
 
+    /** @return array{postalCode: string|null, city: string|null} */
     private function getDefaultLocation(): array
     {
         $quote = $this->checkoutSession->getQuote();
@@ -293,6 +300,7 @@ class RelayPicker extends Component
         return $this->checkoutSession->getQuote()->getShippingAddress()->getCountryId() ?: $this->getDefaultCountry();
     }
 
+    /** @param list<array{longText: string, shortText: string, types: list<string>}> $addressComponents */
     private function getFromAddressComponents(array $addressComponents, string $type, string $textKey = 'longText'): ?string
     {
         foreach ($addressComponents as $component) {
@@ -307,7 +315,7 @@ class RelayPicker extends Component
     private function getPrice(): float
     {
         /** @var ShippingMethod $method */
-        foreach ($this->shippingMethodList->getList() as $method) {
+        foreach ($this->shippingMethodList->getList() ?? [] as $method) {
             if ($method->getCarrierCode() != 'colissimo' || $method->getMethodCode() != 'pr') {
                 continue;
             }
