@@ -2,7 +2,7 @@ version: '3'
 
 services:
   magento:
-    image: ghcr.io/controlaltdelete-nl/magento2-in-a-box/${IMAGE_NAME}:${PHP_VERSION}-${VERSION}-sample-data
+    image: ghcr.io/controlaltdelete-nl/magento2-in-a-box/${IMAGE}
     container_name: magento-project-community-edition
     ports:
       - "80:80"

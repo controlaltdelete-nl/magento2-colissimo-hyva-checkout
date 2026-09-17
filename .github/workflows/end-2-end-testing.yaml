@@ -44,36 +44,19 @@ jobs:
     if: needs.secrets-gate.outputs.is-secret-set == 'true'
     strategy:
       fail-fast: false
-      max-parallel: 4
       matrix:
         include:
-          - PHP_VERSION: php81-fpm
-            IMAGE_NAME: magento-project-community-edition
-            VERSION: magento2.4.4-p13
-          - PHP_VERSION: php81-fpm
-            IMAGE_NAME: magento-project-community-edition
-            VERSION: magento2.4.5-p14
-          - PHP_VERSION: php82-fpm
-            IMAGE_NAME: magento-project-community-edition
-            VERSION: magento2.4.6-p15
-          - PHP_VERSION: php83-fpm
-            IMAGE_NAME: magento-project-community-edition
-            VERSION: magento2.4.7-p10
-          - PHP_VERSION: php83-fpm
-            IMAGE_NAME: magento-project-community-edition
-            VERSION: magento2.4.8-p3
-          - PHP_VERSION: php84-fpm
-            IMAGE_NAME: magento-project-community-edition
-            VERSION: magento2.4.8-p3
-          - PHP_VERSION: php84-fpm
-            IMAGE_NAME: mage-os-community-edition
-            VERSION: mage-os2.3.0
+          - NAME: Magento 2.4.4-p13
+            IMAGE: magento-project-community-edition:php81-fpm-magento2.4.4-p13-sample-data
+          - NAME: Magento latest
+            IMAGE: magento-project-community-edition:latest-sample-data
+          - NAME: Mage-OS latest
+            IMAGE: mage-os-community-edition:latest-sample-data
 
+    name: E2E tests ${{ matrix.NAME }}
     runs-on: ubuntu-latest
     env:
-      PHP_VERSION: ${{ matrix.PHP_VERSION }}
-      IMAGE_NAME: ${{ matrix.IMAGE_NAME }}
-      VERSION: ${{ matrix.VERSION }}
+      IMAGE: ${{ matrix.IMAGE }}
       COLISSIMO_ACCOUNT_ID: ${{ secrets.COLISSIMO_ACCOUNT_ID }}
       COLISSIMO_ACCOUNT_PASSWORD: ${{ secrets.COLISSIMO_ACCOUNT_PASSWORD }}
       HYVA_SSH_PRIVATE_KEY: ${{ secrets.HYVA_SSH_PRIVATE_KEY }}
@@ -167,7 +150,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: E2E logs - ${{ matrix.PHP_VERSION }} - ${{ matrix.VERSION }}
+          name: E2E logs - ${{ matrix.NAME }}
           path: |
             test-results
             playwright-report
