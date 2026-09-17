@@ -4,6 +4,7 @@ declare(strict_types=1);
 use ControlAltDelete\ColissimoHyva\Magewire\Checkout\Shipping\RelayPicker;
 use Hyva\Checkout\ViewModel\Checkout\Formatter as PriceFormatter;
 use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
 use Hyva\Theme\ViewModel\LucideIcons;
 use Hyva\Theme\ViewModel\SvgIcons;
 use LaPoste\Colissimo\Block\Selector;
@@ -16,6 +17,7 @@ use Magento\Framework\View\Element\Template;
 /** @var SvgIcons $icons */
 /** @var Template $block */
 /** @var RelayPicker $magewire */
+/** @var HyvaCsp $hyvaCsp */
 
 $icons = $viewModels->require(LucideIcons::class);
 $priceFormatter = $viewModels->require(PriceFormatter::class);
@@ -58,7 +60,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                 <div class="shrink-0">
                     <div class="p-5 lg:px-8.5 lg:py-6 border-b border-theme-gray-100 flex justify-between items-center">
                         <span id="relay-finder-popup-title" class="font-semibold lg:text-lg uppercase">
-                            <?= __('Relay point') ?>
+                            <?= $escaper->escapeHtml(__('Relay point')) ?>
                         </span>
                         <button
                             type="button"
@@ -95,7 +97,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                                         </gmp-place-autocomplete>
                                     </div>
                                 </div>
-                                <span><?= __('or') ?></span>
+                                <span><?= $escaper->escapeHtml(__('or')) ?></span>
                                 <div>
                                     <button
                                         class="border rounded-full flex justify-center items-center w-15 h-15"
@@ -116,7 +118,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                                 class="w-1/2 py-3.5 lg:py-6 text-center border-b border-theme-gray-200 text-theme-gray-400"
                                 :class="renderAsListButtonClass"
                             >
-                                <?= __('List') ?>
+                                <?= $escaper->escapeHtml(__('List')) ?>
                             </button>
 
                             <button
@@ -125,7 +127,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                                 class="w-1/2 py-3.5 lg:py-6 text-center border-b border-theme-gray-200 text-theme-gray-400"
                                 :class="renderAsMapButtonClass"
                             >
-                                <?= __('Map') ?>
+                                <?= $escaper->escapeHtml(__('Map')) ?>
                             </button>
                         </div>
                     </div>

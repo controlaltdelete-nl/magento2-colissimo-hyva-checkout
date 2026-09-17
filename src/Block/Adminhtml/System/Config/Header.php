@@ -18,8 +18,7 @@ class Header extends Fieldset
         $this->setElement($element);
 
         $headerHtml = $this->getLayout()
-            ->createBlock(Template::class)
-            ->setTemplate(self::TEMPLATE)
+            ->createBlock(Template::class, '', ['data' => ['template' => self::TEMPLATE]])
             ->toHtml();
 
         return $headerHtml . parent::render($element);
@@ -28,8 +27,7 @@ class Header extends Fieldset
     protected function _getHeaderCommentHtml($element): string
     {
         $setupWarningHtml = $this->getLayout()
-            ->createBlock(Template::class)
-            ->setTemplate(self::SETUP_WARNING_TEMPLATE)
+            ->createBlock(Template::class, '', ['data' => ['template' => self::SETUP_WARNING_TEMPLATE]])
             ->toHtml();
 
         return $setupWarningHtml . parent::_getHeaderCommentHtml($element);

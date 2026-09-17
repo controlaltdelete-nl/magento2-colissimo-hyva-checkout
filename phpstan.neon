@@ -1,0 +1,13 @@
+parameters:
+    level: 4
+    paths:
+        - src
+    fileExtensions:
+        - php
+        - phtml
+    excludePaths:
+        - src/Test/*
+    scanDirectories:
+        - ../../generated/code
+    ignoreErrors:
+        - '#^Call to an undefined method [a-zA-Z0-9\\_]+::(get|set|uns|has)[A-Z][a-zA-Z0-9]*\(\)\.$#'

@@ -63,11 +63,11 @@ class RelayPicker extends Component
     {
         $quote = $this->checkoutSession->getQuote();
         $shippingAddress = $quote->getShippingAddress();
-        $postalCode = $shippingAddress->getPostcode();
-        $city = $shippingAddress->getCity();
+        $postalCode = (string)$shippingAddress->getPostcode();
+        $city = (string)$shippingAddress->getCity();
         $address = implode(' ', $shippingAddress->getStreet());
 
-        if ($postalCode === null || $city === null || !$address) {
+        if ($postalCode === '' || $city === '' || $address === '') {
             return;
         }
 
@@ -307,7 +307,7 @@ class RelayPicker extends Component
     private function getPrice(): float
     {
         /** @var ShippingMethod $method */
-        foreach ($this->shippingMethodList->getList() as $method) {
+        foreach ($this->shippingMethodList->getList() ?? [] as $method) {
             if ($method->getCarrierCode() != 'colissimo' || $method->getMethodCode() != 'pr') {
                 continue;
             }

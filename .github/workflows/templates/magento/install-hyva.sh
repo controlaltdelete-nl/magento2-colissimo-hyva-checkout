@@ -24,7 +24,7 @@ composer config repositories.hyva-themes/hyva-checkout git git@gitlab.hyva.io:hy
 composer config repositories.hyva-themes/hyva-compat/magento2-mollie-theme-bundle git git@gitlab.hyva.io:hyva-themes/hyva-compat/magento2-mollie-theme-bundle.git
 composer config repositories.hyva-themes/magento2-base-layout-reset git git@gitlab.hyva.io:hyva-themes/magento2-base-layout-reset.git
 
-composer require hyva-themes/magento2-default-theme-csp hyva-themes/magento2-hyva-checkout
+./retry "composer require hyva-themes/magento2-default-theme-csp hyva-themes/magento2-hyva-checkout"
 
 bin/magento setup:upgrade --keep-generated
 

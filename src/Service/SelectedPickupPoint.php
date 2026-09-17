@@ -23,9 +23,10 @@ class SelectedPickupPoint
             $addressLines[] = $this->information['address'];
         }
 
-        $cityLine = trim(($this->information['post_code'] ?? '') . ' - ' . ($this->information['city'] ?? ''));
-        if ($cityLine !== ' - ') {
-            $addressLines[] = $cityLine;
+        $postCode = $this->information['post_code'] ?? '';
+        $city = $this->information['city'] ?? '';
+        if ($postCode !== '' || $city !== '') {
+            $addressLines[] = trim($postCode . ' - ' . $city, ' -');
         }
 
         return $addressLines;

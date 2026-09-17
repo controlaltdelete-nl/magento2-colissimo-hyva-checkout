@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ControlAltDelete\ColissimoHyva\Service;
 
-use Magento\Framework\HTTP\Client\CurlFactory;
+use Magento\Framework\HTTP\ClientFactory;
 
 class TestGoogleMapsApiKey
 {
@@ -14,19 +14,19 @@ class TestGoogleMapsApiKey
     private const TIMEOUT_IN_SECONDS = 10;
 
     public function __construct(
-        private readonly CurlFactory $curlFactory,
+        private readonly ClientFactory $clientFactory,
     ) {}
 
     public function execute(string $apiKey): array
     {
-        $curl = $this->curlFactory->create();
-        $curl->setTimeout(self::TIMEOUT_IN_SECONDS);
-        $curl->get(self::GEOCODE_URL . '?' . http_build_query([
+        $client = $this->clientFactory->create();
+        $client->setTimeout(self::TIMEOUT_IN_SECONDS);
+        $client->get(self::GEOCODE_URL . '?' . http_build_query([
             'latlng' => self::TEST_COORDINATES,
             'key' => $apiKey,
         ]));
 
-        $response = json_decode($curl->getBody(), true) ?? [];
+        $response = json_decode($client->getBody(), true) ?? [];
         $status = $response['status'] ?? 'INVALID_RESPONSE';
 
         if ($status === self::SUCCESS_STATUS) {
