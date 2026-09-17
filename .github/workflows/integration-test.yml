@@ -67,5 +67,8 @@ jobs:
           docker exec magento-project-community-edition ./retry "php bin/magento module:enable LaPoste_Colissimo ControlAltDelete_ColissimoHyva"
           docker exec magento-project-community-edition ./retry "php bin/magento setup:upgrade --no-interaction --keep-generated"
 
+      - name: Prepare the integration test configuration
+        run: docker exec magento-project-community-edition php /data/prepare-integration-phpunit-xml.php
+
       - name: Run integration tests
         run: docker exec magento-project-community-edition /bin/bash -c "cd /data/dev/tests/integration && ../../../vendor/bin/phpunit -c phpunit.xml /data/extensions/${{ github.event.repository.name }}/src/Test/Integration"

@@ -8,10 +8,27 @@ if [ -z "$HYVA_SSH_PRIVATE_KEY" ]; then
     exit 1
 fi
 
+retry_with_backoff() {
+    local attempt=1
+    until "$@"; do
+        if [ "$attempt" -ge 5 ]; then
+            echo "Command failed after $attempt attempts: $*"
+            return 1
+        fi
+        echo "Attempt $attempt failed, retrying in $((attempt * 20)) seconds: $*"
+        sleep $((attempt * 20))
+        attempt=$((attempt + 1))
+    done
+}
+
+scan_hyva_host_key() {
+    ssh-keyscan -t rsa gitlab.hyva.io >> ~/.ssh/known_hosts && grep -q gitlab.hyva.io ~/.ssh/known_hosts
+}
+
 eval `ssh-agent -s`
 mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
 echo "$HYVA_SSH_PRIVATE_KEY" | ssh-add -
-ssh-keyscan -t rsa gitlab.hyva.io >> ~/.ssh/known_hosts
+retry_with_backoff scan_hyva_host_key
 
 composer config repositories.hyva-themes/magento2-theme-module git git@gitlab.hyva.io:hyva-themes/magento2-theme-module.git
 composer config repositories.hyva-themes/magento2-reset-theme git git@gitlab.hyva.io:hyva-themes/magento2-reset-theme.git
@@ -24,7 +41,7 @@ composer config repositories.hyva-themes/hyva-checkout git git@gitlab.hyva.io:hy
 composer config repositories.hyva-themes/hyva-compat/magento2-mollie-theme-bundle git git@gitlab.hyva.io:hyva-themes/hyva-compat/magento2-mollie-theme-bundle.git
 composer config repositories.hyva-themes/magento2-base-layout-reset git git@gitlab.hyva.io:hyva-themes/magento2-base-layout-reset.git
 
-./retry "composer require hyva-themes/magento2-default-theme-csp hyva-themes/magento2-hyva-checkout"
+retry_with_backoff composer require hyva-themes/magento2-default-theme-csp hyva-themes/magento2-hyva-checkout
 
 bin/magento setup:upgrade --keep-generated
 
