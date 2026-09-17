@@ -1,22 +1,14 @@
 import {expect, Page, test} from '@playwright/test';
 import LoadCheckout from '../actions/LoadCheckout';
 import {waitForMagewireIdle} from '../actions/WaitForMagewireIdle';
+import {closePickupPointPicker, selectColissimoPickupRetrait} from '../actions/PickupPointPicker';
 import {storeViewDefault, storeViewOnepage} from '../../../playwright.config';
 
 const pickupPointRequiredMessage = 'Veuillez sélectionner un point de retrait avant de continuer.';
 
 async function browsePickupPointsWithoutSelecting(page: Page) {
-    const colissimoPickup = page.locator('label', { hasText: 'Colissimo Pickup Retrait' });
-
-    await colissimoPickup.waitFor({ state: 'visible', timeout: 30000 });
-    await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
-    await colissimoPickup.click();
-    await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
-
-    await page.getByText('Choisissez le point de prise').click();
-    await page.getByRole('button', { name: 'Sélectionnez ce point de' }).first().waitFor({ state: 'visible', timeout: 30000 });
-    await page.keyboard.press('Escape');
-    await waitForMagewireIdle(page);
+    await selectColissimoPickupRetrait(page);
+    await closePickupPointPicker(page);
 }
 
 async function selectFlatRateShippingMethod(page: Page) {

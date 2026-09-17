@@ -1,6 +1,7 @@
 import {expect, test} from '@playwright/test';
 import LoadCheckout from '../actions/LoadCheckout';
 import {waitForMagewireIdle} from '../actions/WaitForMagewireIdle';
+import {selectColissimoPickupRetrait} from '../actions/PickupPointPicker';
 import {storeViewDefault} from '../../../playwright.config';
 
 test('Selecting a pickup point keeps the customer shipping address in the checkout', async ({ page }) => {
@@ -9,11 +10,7 @@ test('Selecting a pickup point keeps the customer shipping address in the checko
     await (new LoadCheckout(storeViewDefault)).execute(page);
     await waitForMagewireIdle(page);
 
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).click();
-    await waitForMagewireIdle(page);
-
-    await page.getByText('Choisissez le point de prise').click();
+    await selectColissimoPickupRetrait(page);
     await page.getByRole('button', { name: 'Sélectionnez ce point de' }).first().click();
     await waitForMagewireIdle(page);
 

@@ -1,6 +1,7 @@
 import {expect, Page, test} from '@playwright/test';
 import LoadCheckout from '../actions/LoadCheckout';
 import {waitForMagewireIdle} from '../actions/WaitForMagewireIdle';
+import {closePickupPointPicker, selectColissimoPickupRetrait} from '../actions/PickupPointPicker';
 import {storeViewDefault} from '../../../playwright.config';
 
 async function openPickupPoints(page: Page) {
@@ -15,13 +16,9 @@ test('Pickup points are fetched again after the shipping address changes', async
     await (new LoadCheckout(storeViewDefault)).execute(page);
     await waitForMagewireIdle(page);
 
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).click();
-    await waitForMagewireIdle(page);
-
-    await openPickupPoints(page);
+    await selectColissimoPickupRetrait(page);
     await expect(page.locator('.pickup-point-item').first()).toContainText('75001');
-    await page.keyboard.press('Escape');
+    await closePickupPointPicker(page);
 
     const shippingAddress = page.getByRole('group', { name: 'Adresse de livraison' });
     await shippingAddress.getByLabel('Code Postal').fill('30000');

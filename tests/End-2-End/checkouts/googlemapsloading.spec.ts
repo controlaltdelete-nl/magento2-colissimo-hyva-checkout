@@ -1,6 +1,7 @@
 import {expect, test} from '@playwright/test';
 import LoadCheckout from '../actions/LoadCheckout';
 import {waitForMagewireIdle} from '../actions/WaitForMagewireIdle';
+import {selectColissimoPickupRetrait} from '../actions/PickupPointPicker';
 import {storeViewDefault} from '../../../playwright.config';
 
 test('Google Maps is only loaded when the pickup point picker is opened', async ({ page }) => {
@@ -19,9 +20,7 @@ test('Google Maps is only loaded when the pickup point picker is opened', async 
 
     expect(googleMapsRequests).toHaveLength(0);
 
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).click();
-    await waitForMagewireIdle(page);
-    await page.getByText('Choisissez le point de prise').click();
+    await selectColissimoPickupRetrait(page);
 
     await expect.poll(() => googleMapsRequests.length, { timeout: 30000 }).toBeGreaterThan(0);
 })

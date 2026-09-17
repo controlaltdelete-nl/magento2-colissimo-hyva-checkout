@@ -1,6 +1,7 @@
 import {expect, test} from '@playwright/test';
 import LoadCheckout from '../actions/LoadCheckout';
 import {waitForMagewireIdle} from '../actions/WaitForMagewireIdle';
+import {closePickupPointPicker, selectColissimoPickupRetrait} from '../actions/PickupPointPicker';
 import {storeViewDefault} from '../../../playwright.config';
 
 test('Can make an successful order/pay in default page view', async ({ page }) => {
@@ -8,12 +9,7 @@ test('Can make an successful order/pay in default page view', async ({ page }) =
 
     await (new LoadCheckout(storeViewDefault)).execute(page);
 
-    // Wait for shipping methods to be fully rendered instead of a fixed timeout
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).click();
-    await page.getByText('Choisissez le point de prise').click();
-
-    await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
+    await selectColissimoPickupRetrait(page);
     await page.getByRole('button', { name: 'Sélectionnez ce point de' }).first().click();
     await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
     await waitForMagewireIdle(page);
@@ -34,11 +30,8 @@ test('Cant go to payment page without selecting pickup point',  async ({ page })
 
     await (new LoadCheckout(storeViewDefault)).execute(page);
 
-    // Wait for shipping methods to be fully rendered instead of a fixed timeout
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).click();
-    await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });
-    await waitForMagewireIdle(page);
+    await selectColissimoPickupRetrait(page);
+    await closePickupPointPicker(page);
 
     await page.getByRole('button', { name: 'Proceed to Vérification &' }).click();
     await page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 30000 });

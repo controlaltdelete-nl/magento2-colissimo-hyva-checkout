@@ -21,6 +21,8 @@ use Psr\Log\LoggerInterface;
 
 class RelayPicker extends Component
 {
+    private const COLISSIMO_PICKUP_METHOD_CODE = 'colissimo_pr';
+
     public array $pickupPoints = [];
     public array $renderedPickupPoints = [];
 
@@ -32,6 +34,7 @@ class RelayPicker extends Component
     protected $listeners = [
         'shipping_address_saved' => 'refreshPickupPointsWhenShippingAddressChanged',
         'customer_shipping_address_saved' => 'refreshPickupPointsWhenShippingAddressChanged',
+        'shipping_method_selected' => 'openPickerWhenNoPickupPointIsSelected',
     ];
 
     public function __construct(
@@ -127,6 +130,19 @@ class RelayPicker extends Component
         $this->pickupPointsShippingAddress = null;
 
         $this->getPickupPoints();
+    }
+
+    public function openPickerWhenNoPickupPointIsSelected(array $shippingMethod): void
+    {
+        if (($shippingMethod['code'] ?? null) !== self::COLISSIMO_PICKUP_METHOD_CODE) {
+            return;
+        }
+
+        if (!empty($this->checkoutSession->getLpcRelayInformation()['id'])) {
+            return;
+        }
+
+        $this->dispatchBrowserEvent('open-relay-finder-popup');
     }
 
     public function getStartingLatitude(): float
