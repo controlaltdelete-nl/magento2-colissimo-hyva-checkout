@@ -83,6 +83,54 @@ class RelayPickerTest extends TestCase
     }
 
     #[Test]
+    public function itExplainsThatThePostcodeIsInvalidWhenColissimoRejectsThePostcode(): void
+    {
+        $relayPicker = $this->createRelayPicker(
+            new FakeRelaysApi([], 144, 'Code postal incorrect format non respecté'),
+            new FakeGetLocationFromGoogleMaps([])
+        );
+
+        $relayPicker->getPickupPointsForLatlng(43.8367, 4.3601, self::NIMES_ADDRESS_COMPONENTS);
+
+        $this->assertSame(
+            ['This postcode is not valid for the selected country. Please check the postcode and try again.'],
+            array_map('strval', $relayPicker->errors)
+        );
+    }
+
+    #[Test]
+    public function itExplainsThatColissimoIsNotAvailableWhenTheCountryIsNotEligible(): void
+    {
+        $relayPicker = $this->createRelayPicker(
+            new FakeRelaysApi([], 146, "Pays n'est pas éligible à Colissimo Europe"),
+            new FakeGetLocationFromGoogleMaps([])
+        );
+
+        $relayPicker->getPickupPointsForLatlng(43.8367, 4.3601, self::NIMES_ADDRESS_COMPONENTS);
+
+        $this->assertSame(
+            ['Colissimo pickup points are not available in this country.'],
+            array_map('strval', $relayPicker->errors)
+        );
+    }
+
+    #[Test]
+    public function itShowsAGeneralErrorForOtherColissimoErrors(): void
+    {
+        $relayPicker = $this->createRelayPicker(
+            new FakeRelaysApi([], 999, 'Erreur inconnue'),
+            new FakeGetLocationFromGoogleMaps([])
+        );
+
+        $relayPicker->getPickupPointsForLatlng(43.8367, 4.3601, self::NIMES_ADDRESS_COMPONENTS);
+
+        $this->assertSame(
+            ['An error occurred while fetching pickup points. Please try again later.'],
+            array_map('strval', $relayPicker->errors)
+        );
+    }
+
+    #[Test]
     public function itUsesTheShippingAddressCountryWhenTheSearchedAddressHasNoCountry(): void
     {
         $relaysApi = new FakeRelaysApi();

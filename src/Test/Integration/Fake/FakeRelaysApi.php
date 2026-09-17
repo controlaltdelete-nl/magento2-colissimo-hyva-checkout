@@ -13,6 +13,8 @@ class FakeRelaysApi extends RelaysApi
 
     public function __construct(
         private readonly array $pickupPoints = [],
+        private readonly int $errorCode = 0,
+        private readonly string $errorMessage = '',
     ) {}
 
     public function getRequests(): array
@@ -26,8 +28,8 @@ class FakeRelaysApi extends RelaysApi
 
         $response = new stdClass();
         $response->return = new stdClass();
-        $response->return->errorCode = 0;
-        $response->return->errorMessage = '';
+        $response->return->errorCode = $this->errorCode;
+        $response->return->errorMessage = $this->errorMessage;
         $response->return->listePointRetraitAcheminement = $this->pickupPoints;
 
         return $response;
