@@ -7,19 +7,23 @@
                 <group id="google_maps" translate="label" type="text" sortOrder="1000" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Hyvä Checkout integration</label>
                     <frontend_model>ControlAltDelete\ColissimoHyva\Block\Adminhtml\System\Config\Header</frontend_model>
-                    <field id="api_key" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <field id="api_key" translate="label comment" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
                         <label>Api key</label>
+                        <comment>Google Maps API key used by the pickup point picker. Enable the Maps JavaScript API, Places API (New) and Geocoding API for this key.</comment>
                         <config_path>controlaltdelete_colissimo_hyva/google_maps/api_key</config_path>
                     </field>
-                    <field id="region" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <field id="test_api_key" translate="label" type="button" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <frontend_model>ControlAltDelete\ColissimoHyva\Block\Adminhtml\System\Config\TestGoogleMapsApiKeyButton</frontend_model>
+                    </field>
+                    <field id="region" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Region</label>
                         <config_path>controlaltdelete_colissimo_hyva/google_maps/region</config_path>
                     </field>
-                    <field id="starting_latitude" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <field id="starting_latitude" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Starting latitude</label>
                         <config_path>controlaltdelete_colissimo_hyva/google_maps/starting_latitude</config_path>
                     </field>
-                    <field id="starting_longitude" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <field id="starting_longitude" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Starting longitude</label>
                         <config_path>controlaltdelete_colissimo_hyva/google_maps/starting_longitude</config_path>
                     </field>

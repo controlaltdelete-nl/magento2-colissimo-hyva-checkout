@@ -1,0 +1,21 @@
+<?php
+declare(strict_types=1);
+
+use Magento\Backend\Block\Template;
+use Magento\Framework\Escaper;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+
+$advancedSetupLink = sprintf(
+    '<a href="%s">%s</a>',
+    $escaper->escapeUrl($block->getUrl('adminhtml/system_config/edit', ['section' => 'lpc_advanced'])),
+    $escaper->escapeHtml(__('La Poste Colissimo Advanced Setup'))
+);
+?>
+<div class="message message-warning">
+    <?= $escaper->escapeHtml(
+        __('This integration only adds the pickup point picker to Hyvä Checkout. Your Colissimo account, shipping methods and prices have to be configured separately in %1.', $advancedSetupLink),
+        ['a']
+    ) ?>
+</div>
