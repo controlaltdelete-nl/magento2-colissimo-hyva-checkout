@@ -6,6 +6,7 @@ namespace ControlAltDelete\ColissimoHyva\Service;
 
 class SelectedPickupPoint
 {
+    /** @param array<string, string> $information */
     public function __construct(
         private readonly array $information
     ) {}
@@ -15,6 +16,7 @@ class SelectedPickupPoint
         return $this->information['name'] ?? 'Selected Relay Point';
     }
 
+    /** @return list<string> */
     public function getAddressLines(): array
     {
         $addressLines = [];

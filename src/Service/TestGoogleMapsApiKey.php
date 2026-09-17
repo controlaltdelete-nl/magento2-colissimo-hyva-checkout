@@ -17,6 +17,7 @@ class TestGoogleMapsApiKey
         private readonly ClientFactory $clientFactory,
     ) {}
 
+    /** @return array{success: bool, message: string} */
     public function execute(string $apiKey): array
     {
         $client = $this->clientFactory->create();

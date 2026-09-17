@@ -15,6 +15,7 @@ class GetLocationFromGoogleMaps
         private readonly ClientFactory $clientFactory,
     ) {}
 
+    /** @return array{city: string|null, postalCode: string|null, countryCode: string|null} */
     public function byLatitudeLongitude(string $region, float $latitude, float $longitude): array
     {
         $url = 'https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query([
@@ -27,6 +28,7 @@ class GetLocationFromGoogleMaps
         return $this->extractLocationInfo($response['results'][0]);
     }
 
+    /** @return array{city: string|null, postalCode: string|null, countryCode: string|null} */
     public function byZipcode(string $country, string $zipcode): array
     {
         $url = 'https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query([
@@ -39,6 +41,7 @@ class GetLocationFromGoogleMaps
         return $this->extractLocationInfo($response['results'][0]);
     }
 
+    /** @return array<string, float> */
     public function byAddress(string $address): array
     {
         $url = 'https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query([
@@ -51,6 +54,10 @@ class GetLocationFromGoogleMaps
         return $this->extractLocationInfo($response['results'][0], true);
     }
 
+    /**
+     * @param array<string, mixed> $result
+     * @return array<string, float|string|null>
+     */
     private function extractLocationInfo(array $result, bool $getCoordinates = false): array
     {
         if ($getCoordinates) {
@@ -95,6 +102,7 @@ class GetLocationFromGoogleMaps
         return $this->config->getGoogleMapsApiKey();
     }
 
+    /** @return array<string, mixed> */
     private function makeRequest(string $url): array
     {
         $client = $this->clientFactory->create();

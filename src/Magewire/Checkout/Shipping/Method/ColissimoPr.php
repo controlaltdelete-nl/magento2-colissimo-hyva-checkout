@@ -14,6 +14,7 @@ use Magewirephp\Magewire\Component;
 
 class ColissimoPr extends Component implements EvaluationInterface
 {
+    /** @var array<string, string> */
     protected $listeners = [
         'relay-point-picked' => 'refresh'
     ];

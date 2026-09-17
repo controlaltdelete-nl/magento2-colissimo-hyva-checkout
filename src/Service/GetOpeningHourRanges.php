@@ -8,6 +8,7 @@ class GetOpeningHourRanges
 {
     private const CLOSED_HOUR_RANGE = '00:00-00:00';
 
+    /** @return list<array{start: string, end: string}> */
     public function execute(string $hours): array
     {
         $hourRanges = array_filter(

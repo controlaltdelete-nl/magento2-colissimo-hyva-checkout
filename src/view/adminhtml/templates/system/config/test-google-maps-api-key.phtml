@@ -10,7 +10,7 @@ use Magento\Framework\View\Helper\SecureHtmlRenderer;
 /** @var SecureHtmlRenderer $secureRenderer */
 ?>
 <button type="button" class="action-default" id="colissimo-hyva-test-google-maps-api-key">
-    <span><?= $escaper->escapeHtml(__('Test API key')) ?></span>
+    <span><?= $escaper->escapeHtml((string)__('Test API key')) ?></span>
 </button>
 <ul id="colissimo-hyva-test-google-maps-api-key-results" class="note" style="list-style: none; margin: 1rem 0 0; padding: 0;"></ul>
 
@@ -33,8 +33,8 @@ require(['jquery'], function ($) {
         showLoader: true,
         data: {form_key: window.FORM_KEY, api_key: apiKey}
     }).then(
-        response => showResult('{$escaper->escapeJs(__('Server (Geocoding API)'))}', response.success, response.message),
-        () => showResult('{$escaper->escapeJs(__('Server (Geocoding API)'))}', false, '{$escaper->escapeJs(__('The test request failed.'))}')
+        response => showResult('{$escaper->escapeJs((string)__('Server (Geocoding API)'))}', response.success, response.message),
+        () => showResult('{$escaper->escapeJs((string)__('Server (Geocoding API)'))}', false, '{$escaper->escapeJs((string)__('The test request failed.'))}')
     );
 
     const testBrowser = (apiKey) => fetch('https://places.googleapis.com/v1/places:searchText', {
@@ -42,17 +42,17 @@ require(['jquery'], function ($) {
         headers: {'Content-Type': 'application/json', 'X-Goog-Api-Key': apiKey, 'X-Goog-FieldMask': 'places.id'},
         body: JSON.stringify({textQuery: 'Paris'})
     }).then(response => response.json().then(body => showResult(
-        '{$escaper->escapeJs(__('Browser (Places API (New))'))}',
+        '{$escaper->escapeJs((string)__('Browser (Places API (New))'))}',
         response.ok,
-        response.ok ? '{$escaper->escapeJs(__('OK'))}' : (body.error && body.error.message) || response.status
-    ))).catch(error => showResult('{$escaper->escapeJs(__('Browser (Places API (New))'))}', false, error.message));
+        response.ok ? '{$escaper->escapeJs((string)__('OK'))}' : (body.error && body.error.message) || response.status
+    ))).catch(error => showResult('{$escaper->escapeJs((string)__('Browser (Places API (New))'))}', false, error.message));
 
     $('#colissimo-hyva-test-google-maps-api-key').on('click', function () {
         const apiKey = document.getElementById('{$escaper->escapeJs($block->getApiKeyInputId())}').value.trim();
         results.textContent = '';
 
         if (apiKey === '') {
-            showResult('{$escaper->escapeJs(__('Test API key'))}', false, '{$escaper->escapeJs(__('Enter an API key first.'))}');
+            showResult('{$escaper->escapeJs((string)__('Test API key'))}', false, '{$escaper->escapeJs((string)__('Enter an API key first.'))}');
             return;
         }
 
