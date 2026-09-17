@@ -44,8 +44,21 @@ jobs:
     if: needs.secrets-gate.outputs.is-secret-set == 'true'
     strategy:
       fail-fast: false
+      max-parallel: 4
       matrix:
         include:
+          - PHP_VERSION: php81-fpm
+            IMAGE_NAME: magento-project-community-edition
+            VERSION: magento2.4.4-p13
+          - PHP_VERSION: php81-fpm
+            IMAGE_NAME: magento-project-community-edition
+            VERSION: magento2.4.5-p14
+          - PHP_VERSION: php82-fpm
+            IMAGE_NAME: magento-project-community-edition
+            VERSION: magento2.4.6-p15
+          - PHP_VERSION: php83-fpm
+            IMAGE_NAME: magento-project-community-edition
+            VERSION: magento2.4.7-p10
           - PHP_VERSION: php83-fpm
             IMAGE_NAME: magento-project-community-edition
             VERSION: magento2.4.8-p3
