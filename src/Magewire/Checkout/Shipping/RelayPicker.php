@@ -7,6 +7,7 @@ namespace ControlAltDelete\ColissimoHyva\Magewire\Checkout\Shipping;
 use ControlAltDelete\ColissimoHyva\Block\Checkout\Shipping\RelayPoint;
 use ControlAltDelete\ColissimoHyva\Config;
 use ControlAltDelete\ColissimoHyva\Service\GetLocationFromGoogleMaps;
+use ControlAltDelete\ColissimoHyva\Service\NormalizePostcode;
 use Exception;
 use Hyva\Checkout\ViewModel\Checkout\Shipping\MethodList;
 use LaPoste\Colissimo\Model\RelaysWebservice\GenerateRelaysPayload;
@@ -51,6 +52,7 @@ class RelayPicker extends Component
         private readonly GetLocationFromGoogleMaps $getLocationFromGoogleMaps,
         private readonly Config $config,
         private readonly ScopeConfigInterface $scopeConfig,
+        private readonly NormalizePostcode $normalizePostcode,
     ) {}
 
     public function getDefaultCountry(): string
@@ -212,6 +214,7 @@ class RelayPicker extends Component
         }
 
         $countryCode = $countryCode ?: $this->getShippingCountryCode();
+        $postalCode = $this->normalizePostcode->execute($countryCode, (string)$postalCode);
 
         try {
             $this->renderedPickupPoints = [];

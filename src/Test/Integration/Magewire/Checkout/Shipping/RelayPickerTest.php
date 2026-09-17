@@ -67,6 +67,22 @@ class RelayPickerTest extends TestCase
     }
 
     #[Test]
+    public function itSendsThePostcodeInTheFormatThatColissimoAccepts(): void
+    {
+        $relaysApi = new FakeRelaysApi();
+        $relayPicker = $this->createRelayPicker($relaysApi, new FakeGetLocationFromGoogleMaps([]));
+
+        $relayPicker->getPickupPointsForLatlng(53.1554, 4.8562, [
+            ['longText' => '1795 AD', 'shortText' => '1795 AD', 'types' => ['postal_code']],
+            ['longText' => 'De Cocksdorp', 'shortText' => 'De Cocksdorp', 'types' => ['locality', 'political']],
+            ['longText' => 'Netherlands', 'shortText' => 'NL', 'types' => ['country', 'political']],
+        ]);
+
+        $this->assertSame('1795AD', $relaysApi->getRequests()[0]['zipCode']);
+        $this->assertSame('NL', $relaysApi->getRequests()[0]['countryCode']);
+    }
+
+    #[Test]
     public function itUsesTheShippingAddressCountryWhenTheSearchedAddressHasNoCountry(): void
     {
         $relaysApi = new FakeRelaysApi();
