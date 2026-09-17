@@ -15,10 +15,6 @@
                     <field id="test_api_key" translate="label" type="button" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0">
                         <frontend_model>ControlAltDelete\ColissimoHyva\Block\Adminhtml\System\Config\TestGoogleMapsApiKeyButton</frontend_model>
                     </field>
-                    <field id="region" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
-                        <label>Region</label>
-                        <config_path>controlaltdelete_colissimo_hyva/google_maps/region</config_path>
-                    </field>
                     <field id="starting_latitude" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Starting latitude</label>
                         <config_path>controlaltdelete_colissimo_hyva/google_maps/starting_latitude</config_path>

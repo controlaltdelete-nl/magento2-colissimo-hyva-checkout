@@ -69,14 +69,14 @@ The selected relay point is saved to the quote and passed along to the order, ma
 - Fully reactive UI using Magewire and Alpine.js
 - Validates checkout step completion (customer must pick a point before proceeding)
 - Stores selected relay point in the checkout session for downstream processing
-- Admin configuration for Google Maps API key, default region, and map starting coordinates
+- Admin configuration for Google Maps API key and map starting coordinates
 
 ## Requirements
 
 | Dependency | Version |
 |---|---|
 | PHP | 8.1 or higher |
-| Magento | 2.4.4 or higher |
+| Magento | 2.4.7 or higher |
 | [La Poste Colissimo module](https://commercemarketplace.adobe.com/laposte-magento2-colissimo-module.html) | * |
 | Hyvä Checkout | 1.3 or higher |
 | Google Maps API key | -- |
@@ -108,7 +108,6 @@ Go to **Stores > Configuration > Carriers > LaPoste > Hyvä Checkout integration
 | Field | Description |
 |---|---|
 | Google Maps API Key | Your Google Maps API key |
-| Region | Default geocoding region (default: `fr`) |
 | Starting Latitude | Initial map centre latitude (default: `48.8566`, Paris) |
 | Starting Longitude | Initial map centre longitude (default: `2.3522`, Paris) |
 

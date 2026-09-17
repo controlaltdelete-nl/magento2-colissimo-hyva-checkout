@@ -5,7 +5,6 @@
         <controlaltdelete_colissimo_hyva>
             <google_maps>
                 <api_key></api_key>
-                <region>fr</region>
                 <starting_latitude>48.8566</starting_latitude>
                 <starting_longitude>2.3522</starting_longitude>
             </google_maps>

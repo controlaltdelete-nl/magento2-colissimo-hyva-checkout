@@ -7,6 +7,7 @@ namespace ControlAltDelete\ColissimoHyva\Magewire\Checkout\Shipping;
 use ControlAltDelete\ColissimoHyva\Block\Checkout\Shipping\RelayPoint;
 use ControlAltDelete\ColissimoHyva\Config;
 use ControlAltDelete\ColissimoHyva\Service\GetLocationFromGoogleMaps;
+use ControlAltDelete\ColissimoHyva\Service\NormalizePostcode;
 use Exception;
 use Hyva\Checkout\ViewModel\Checkout\Shipping\MethodList;
 use LaPoste\Colissimo\Model\RelaysWebservice\GenerateRelaysPayload;
@@ -14,6 +15,7 @@ use LaPoste\Colissimo\Model\RelaysWebservice\RelaysApi;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
 use Magento\Framework\View\LayoutInterface;
 use Magento\Quote\Model\Cart\ShippingMethod;
 use Magewirephp\Magewire\Component;
@@ -22,6 +24,8 @@ use Psr\Log\LoggerInterface;
 class RelayPicker extends Component
 {
     private const COLISSIMO_PICKUP_METHOD_CODE = 'colissimo_pr';
+    private const COLISSIMO_INVALID_POSTCODE_ERROR_CODES = [125, 143, 144];
+    private const COLISSIMO_COUNTRY_NOT_ELIGIBLE_ERROR_CODE = 146;
 
     /** @var array<int, \stdClass|array<string, mixed>> */
     public array $pickupPoints = [];
@@ -51,6 +55,7 @@ class RelayPicker extends Component
         private readonly GetLocationFromGoogleMaps $getLocationFromGoogleMaps,
         private readonly Config $config,
         private readonly ScopeConfigInterface $scopeConfig,
+        private readonly NormalizePostcode $normalizePostcode,
     ) {}
 
     public function getDefaultCountry(): string
@@ -212,6 +217,7 @@ class RelayPicker extends Component
         }
 
         $countryCode = $countryCode ?: $this->getShippingCountryCode();
+        $postalCode = $this->normalizePostcode->execute($countryCode, (string)$postalCode);
 
         try {
             $this->renderedPickupPoints = [];
@@ -231,7 +237,12 @@ class RelayPicker extends Component
             $result = $this->relaysApi->getRelays($this->generateRelaysPayload->assemble());
 
             if ($result->return->errorCode != 0) {
-                throw new LocalizedException(__('Error fetching pickup points: %1', $result->return->errorMessage));
+                $this->logger->error(
+                    'Error fetching pickup points: ' . $result->return->errorMessage,
+                    ['errorCode' => $result->return->errorCode, 'countryCode' => $countryCode, 'zipCode' => $postalCode]
+                );
+                $this->errors = [$this->getColissimoErrorMessage((int)$result->return->errorCode)];
+                return;
             }
 
             $this->pickupPoints = $result->return->listePointRetraitAcheminement ?? [];
@@ -281,6 +292,19 @@ class RelayPicker extends Component
             'postalCode' => null,
             'city' => null,
         ];
+    }
+
+    private function getColissimoErrorMessage(int $errorCode): Phrase
+    {
+        if (in_array($errorCode, self::COLISSIMO_INVALID_POSTCODE_ERROR_CODES, true)) {
+            return __('This postcode is not valid for the selected country. Please check the postcode and try again.');
+        }
+
+        if ($errorCode === self::COLISSIMO_COUNTRY_NOT_ELIGIBLE_ERROR_CODE) {
+            return __('Colissimo pickup points are not available in this country.');
+        }
+
+        return __('An error occurred while fetching pickup points. Please try again later.');
     }
 
     private function getShippingAddressFingerprint(): string

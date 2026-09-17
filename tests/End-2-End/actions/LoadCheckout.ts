@@ -1,4 +1,5 @@
 import {expect} from "@playwright/test";
+import {waitForMagewireIdle} from "./WaitForMagewireIdle";
 
 export default class LoadCheckout {
     checkout: string;
@@ -25,6 +26,17 @@ export default class LoadCheckout {
         await page.getByRole('group', { name: 'Adresse de livraison' }).getByLabel('Pays').selectOption('FR');
         await page.getByRole('group', { name: 'Adresse de livraison' }).getByLabel('Code Postal').fill('75001');
         await page.getByRole('group', { name: 'Adresse de livraison' }).getByLabel('Ville').fill('Wipou');
+
+        const addressSaved = page.waitForResponse(
+            response => response.url().includes('/magewire/post/')
+                && response.url().includes('shipping-details.address-form')
+                && (response.request().postData() ?? '').includes('"method":"store"'),
+            { timeout: 30000 }
+        );
         await page.getByRole('group', { name: 'Adresse de livraison' }).getByLabel('Numéro de téléphone').fill('08234328589');
+        await addressSaved;
+        await waitForMagewireIdle(page);
+
+        await page.locator('label', { hasText: 'Colissimo Pickup Retrait' }).waitFor({ state: 'visible', timeout: 30000 });
     }
 }

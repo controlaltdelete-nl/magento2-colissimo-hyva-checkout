@@ -23,3 +23,5 @@
 "The test request failed.","La requête de test a échoué."
 "Enter an API key first.","Saisissez d'abord une clé API."
 "This integration only adds the pickup point picker to Hyvä Checkout. Your Colissimo account, shipping methods and prices have to be configured separately in %1.","Cette intégration ajoute uniquement le sélecteur de point relais à Hyvä Checkout. Votre compte Colissimo, les modes de livraison et les tarifs doivent être configurés séparément dans %1."
+"This postcode is not valid for the selected country. Please check the postcode and try again.","Ce code postal n'est pas valide pour le pays sélectionné. Veuillez vérifier le code postal et réessayer."
+"Colissimo pickup points are not available in this country.","Les points relais Colissimo ne sont pas disponibles dans ce pays."
