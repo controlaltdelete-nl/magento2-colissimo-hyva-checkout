@@ -69,7 +69,7 @@ The selected relay point is saved to the quote and passed along to the order, ma
 - Fully reactive UI using Magewire and Alpine.js
 - Validates checkout step completion (customer must pick a point before proceeding)
 - Stores selected relay point in the checkout session for downstream processing
-- Admin configuration for Google Maps API key, default region, and map starting coordinates
+- Admin configuration for Google Maps API key and map starting coordinates
 
 ## Requirements
 
@@ -108,7 +108,6 @@ Go to **Stores > Configuration > Carriers > LaPoste > Hyvä Checkout integration
 | Field | Description |
 |---|---|
 | Google Maps API Key | Your Google Maps API key |
-| Region | Default geocoding region (default: `fr`) |
 | Starting Latitude | Initial map centre latitude (default: `48.8566`, Paris) |
 | Starting Longitude | Initial map centre longitude (default: `2.3522`, Paris) |
 

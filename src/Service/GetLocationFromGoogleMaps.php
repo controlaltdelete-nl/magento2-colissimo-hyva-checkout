@@ -28,42 +28,12 @@ class GetLocationFromGoogleMaps
         return $this->extractLocationInfo($response['results'][0]);
     }
 
-    /** @return array{city: string|null, postalCode: string|null, countryCode: string|null} */
-    public function byZipcode(string $country, string $zipcode): array
-    {
-        $url = 'https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query([
-            'address' => $zipcode . ', ' . $country,
-            'region'  => $this->config->getRegion(),
-        ]);
-
-        $response = $this->makeRequest($url);
-
-        return $this->extractLocationInfo($response['results'][0]);
-    }
-
-    /** @return array<string, float> */
-    public function byAddress(string $address): array
-    {
-        $url = 'https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query([
-            'address' => $address,
-            'region'  => $this->config->getRegion(),
-        ]);
-
-        $response = $this->makeRequest($url);
-
-        return $this->extractLocationInfo($response['results'][0], true);
-    }
-
     /**
      * @param array<string, mixed> $result
-     * @return array<string, float|string|null>
+     * @return array{city: string|null, postalCode: string|null, countryCode: string|null}
      */
-    private function extractLocationInfo(array $result, bool $getCoordinates = false): array
+    private function extractLocationInfo(array $result): array
     {
-        if ($getCoordinates) {
-            return $result['geometry']['location'] ?? [];
-        }
-
         $city        = null;
         $postalCode  = null;
         $countryCode = null;
