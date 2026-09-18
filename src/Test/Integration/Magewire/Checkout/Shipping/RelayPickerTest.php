@@ -175,6 +175,39 @@ class RelayPickerTest extends TestCase
     }
 
     #[Test]
+    public function itLimitsTheAddressSearchToTheShippingCountry(): void
+    {
+        $relayPicker = $this->createRelayPicker(new FakeRelaysApi(), new FakeGetLocationFromGoogleMaps([]));
+
+        $relayPicker->mount();
+
+        $this->assertSame('NL', $relayPicker->searchCountryCode);
+    }
+
+    #[Test]
+    public function itLimitsTheAddressSearchToTheDefaultCountryWithoutAShippingCountry(): void
+    {
+        $this->checkoutSession->getQuote()->getShippingAddress()->setCountryId(null);
+        $relayPicker = $this->createRelayPicker(new FakeRelaysApi(), new FakeGetLocationFromGoogleMaps([]));
+
+        $relayPicker->mount();
+
+        $this->assertSame($relayPicker->getDefaultCountry(), $relayPicker->searchCountryCode);
+    }
+
+    #[Test]
+    public function itUpdatesTheAddressSearchCountryWhenTheShippingAddressChanges(): void
+    {
+        $relayPicker = $this->createRelayPicker(new FakeRelaysApi(), new FakeGetLocationFromGoogleMaps([]));
+        $relayPicker->mount();
+        $this->checkoutSession->getQuote()->getShippingAddress()->setCountryId('BE');
+
+        $relayPicker->refreshPickupPointsWhenShippingAddressChanged();
+
+        $this->assertSame('BE', $relayPicker->searchCountryCode);
+    }
+
+    #[Test]
     public function itOpensThePickerWhenColissimoPickupIsSelectedWithoutAPickupPoint(): void
     {
         $relayPicker = $this->createRelayPicker(new FakeRelaysApi(), new FakeGetLocationFromGoogleMaps([]));

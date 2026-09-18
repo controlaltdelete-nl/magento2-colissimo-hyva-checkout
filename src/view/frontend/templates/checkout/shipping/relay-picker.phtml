@@ -92,7 +92,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                                             placeholder=" "
                                             class="form-input w-full grow text postcode address-attribute"
                                             x-ref="relayFinderPopupDialogSearch"
-                                            included-region-codes="<?= $escaper->escapeHtml($magewire->getDefaultCountry()); ?>"
+                                            included-region-codes="<?= $escaper->escapeHtmlAttr($magewire->searchCountryCode); ?>"
                                         >
                                         </gmp-place-autocomplete>
                                     </div>
@@ -343,6 +343,7 @@ $priceFormatter = $viewModels->require(PriceFormatter::class);
                     }
                 },
                 openRelayFinderPopup() {
+                    this.$refs.relayFinderPopupDialogSearch.setAttribute('included-region-codes', this.$wire.searchCountryCode);
                     this.loadGoogleMapsApi(() => this.initSearch());
                     this.scrollLock(true);
                     this.$nextTick(() => {

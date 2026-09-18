@@ -37,6 +37,7 @@ class RelayPicker extends Component
     public array $errors = [];
     public ?string $selectedPickupPointId = null;
     public ?string $pickupPointsShippingAddress = null;
+    public string $searchCountryCode = '';
 
     /** @var array<string, string> */
     protected $listeners = [
@@ -129,6 +130,8 @@ class RelayPicker extends Component
 
     public function refreshPickupPointsWhenShippingAddressChanged(): void
     {
+        $this->searchCountryCode = $this->getShippingCountryCode();
+
         if ($this->pickupPointsShippingAddress === null
             || $this->pickupPointsShippingAddress === $this->getShippingAddressFingerprint()) {
             return;
@@ -175,6 +178,7 @@ class RelayPicker extends Component
     public function mount(): void
     {
         $this->initializeSelectedPickupPoint();
+        $this->searchCountryCode = $this->getShippingCountryCode();
     }
 
     public function selectPickupPoint(string $identifiant): void
