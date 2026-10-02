@@ -75,6 +75,10 @@ jobs:
             echo "Waiting for Magento to be ready..."; sleep 10;
           done
 
+      - name: Allow packages with security advisories on older Magento versions
+        if: matrix.NAME == 'Magento 2.4.7-p10'
+        run: docker exec magento-project-community-edition composer config policy.advisories.block false
+
       - name: Install Hyvä theme and Hyvä Checkout
         run: |
           docker exec magento-project-community-edition /bin/bash /data/install-hyva.sh
